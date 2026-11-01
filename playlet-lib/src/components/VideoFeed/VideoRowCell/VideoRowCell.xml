@@ -19,6 +19,8 @@
             <Poster
                 id="thumbnail"
                 loadDisplayMode="scaleToZoom"
+                loadWidth="350"
+                loadHeight="196"
                 width="350"
                 height="196"
                 failedBitmapUri="pkg:/images/thumbnail-missing.jpg">

@@ -13,6 +13,9 @@
 
             <CirclePoster
                 id="thumbnail"
+                loadDisplayMode="scaleToFill"
+                loadWidth="196"
+                loadHeight="196"
                 width="196"
                 height="196"
                 failedBitmapUri="pkg:/images/thumbnail-missing.jpg" />
