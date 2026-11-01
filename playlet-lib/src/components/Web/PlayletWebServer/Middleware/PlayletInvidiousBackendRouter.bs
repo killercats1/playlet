@@ -320,6 +320,12 @@ namespace Http
             continuation = request.query.continuation
             if not StringUtils.IsNullOrEmpty(continuation)
                 options.continuation = continuation
+            else
+                ' a topic chip (All, Music, Gaming, ...) picked on Home: its token loads that topic's feed
+                chip = request.query.chip
+                if IsString(chip) and chip <> ""
+                    options.continuation = chip
+                end if
             end if
 
             result = InnertubeService.GetHome(options)
@@ -359,6 +365,9 @@ namespace Http
                 end if
                 if continuation = "" and IsString(feed.continuation)
                     continuation = feed.continuation
+                end if
+                if not merged.DoesExist("sortOptions") and IsArray(feed.sortOptions)
+                    merged["sortOptions"] = feed.sortOptions
                 end if
                 if not IsArray(feed.items)
                     continue for

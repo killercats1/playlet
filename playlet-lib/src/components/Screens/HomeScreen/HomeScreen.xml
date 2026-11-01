@@ -8,6 +8,8 @@
         <field id="useHomeLayout" type="boolean" value="true" />
     </interface>
     <children>
+        <!-- topic chips (All, Music, Gaming, ...) for the Recommended row; hidden unless YouTube sends them. -->
+        <ChipBar id="chipBar" translation="[90, 22]" />
         <VideoRowList
             itemComponentName="RowCell"
             id="rowList"
