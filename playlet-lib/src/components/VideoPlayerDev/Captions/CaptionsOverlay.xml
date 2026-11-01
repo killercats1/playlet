@@ -17,7 +17,7 @@
         <Rectangle id="background" color="0x000000" opacity="0.65" visible="false" />
         <Label id="label" width="1040" translation="[120, 0]" horizAlign="center" wrap="true" maxLines="3"
             color="0xFFFFFF">
-            <Font role="font" uri="font:SystemFontFile" size="30" />
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" />
         </Label>
     </children>
 </component>

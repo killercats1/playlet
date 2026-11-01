@@ -25,20 +25,22 @@
                 translation="[100,15]">
                 <Label
                     width="230"
-                    font="font:SmallestBoldSystemFont"
                     horizAlign="center"
                     text="Device connected">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
                 </Label>
                 <Label
                     id="line1Label"
                     width="230"
-                    font="font:SmallestBoldSystemFont"
-                    horizAlign="center" />
+                    horizAlign="center">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+                </Label>
                 <Label
                     id="line2Label"
                     width="230"
-                    font="font:SmallestSystemFont"
-                    horizAlign="center" />
+                    horizAlign="center">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+                </Label>
             </LayoutGroup>
         </Poster>
         <Animation

@@ -13,18 +13,20 @@
             translation="[10, 2]" />
 
         <Label id="categoryLabel"
-            font="font:SmallestSystemFont"
             width="320"
             height="32"
             vertAlign="center"
             horizAlign="left"
-            translation="[80, 0]" />
+            translation="[80, 0]">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+        </Label>
         <Label id="optionLabel"
             width="320"
             height="32"
-            font="font:SmallestSystemFont"
             vertAlign="center"
             horizAlign="right"
-            translation="[310, 0]" />
+            translation="[310, 0]">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+        </Label>
     </children>
 </component>

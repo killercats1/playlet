@@ -91,6 +91,7 @@
         "locale/**",
         "config/**",
         "lib/**",
+        "fonts/**",
         "www/**",
         "manifest",
         "!**/*.spec.bs",

@@ -19,8 +19,8 @@
         <field id="serverLabelVisible" type="boolean" alias="ServerLabel.visible" />
     </interface>
     <children>
-        <Font id="normalFont" uri="font:SystemFontFile" size="24" />
-        <Font id="boldFont" uri="font:MediumSystemFontFile" size="24" />
+        <Font id="normalFont" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" />
+        <Font id="boldFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" />
 
         <Group translation="[20,50]">
             <Group
@@ -59,7 +59,7 @@
                         height="152"
                         vertAlign="center"
                         horizAlign="center">
-                        <Font role="font" uri="font:SystemFontFile" size="120" />
+                        <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="120" />
                     </Label>
                     <Poster
                         id="backendTypePoster"
@@ -81,6 +81,7 @@
                 width="300"
                 horizAlign="center"
                 translation="[-50,250]">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" />
             </Label>
             <Label
                 id="ServerLabel"
@@ -88,7 +89,7 @@
                 horizAlign="center"
                 translation="[-100,310]"
                 visible="false">
-                <Font role="font" uri="font:SystemFontFile" size="18" />
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
             </Label>
         </Group>
         <Animation

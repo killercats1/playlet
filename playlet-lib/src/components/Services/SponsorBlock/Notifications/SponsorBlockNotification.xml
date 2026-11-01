@@ -21,21 +21,21 @@
             <LayoutGroup vertAlignment="center" translation="[70,35]">
                 <Label
                     id="categoryLabel"
-                    font="font:TinyBoldSystemFont"
                     horizAlign="center"
                     width="170"
                     lineSpacing="0"
                     maxLines="2"
                     wrap="true">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="15" />
                 </Label>
                 <Label
                     id="actionLabel"
-                    font="font:TinySystemFont"
                     horizAlign="center"
                     width="170"
                     lineSpacing="0"
                     maxLines="2"
                     wrap="true">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="15" />
                 </Label>
             </LayoutGroup>
         </Poster>

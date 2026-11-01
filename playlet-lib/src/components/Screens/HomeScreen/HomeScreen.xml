@@ -24,7 +24,7 @@
             showRowLabel="[true]"
             rowFocusAnimationStyle="floatingfocus"
             variableWidthItems="true"
-            focusBitmapUri="pkg:/images/focus-glow-padding-30.$$RES$$.9.png"
+            focusBitmapUri="pkg:/images/focus-outline.$$RES$$.9.png"
         />
     </children>
 </component>

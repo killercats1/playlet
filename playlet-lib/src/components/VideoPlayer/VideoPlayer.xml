@@ -21,7 +21,9 @@
         <function name="PlayWithContent" />
     </interface>
     <children>
-        <Label id="chapterLabel" width="350" height="25" horizAlign="center" vertAlign="center" font="font:SmallestSystemFont" />
+        <Label id="chapterLabel" width="350" height="25" horizAlign="center" vertAlign="center">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+        </Label>
         <Timer id="chapterLabelTimer" repeat="true" duration="0.5" />
         <Animation id="minimizeAnimation" duration="0.3" optional="true">
             <FloatFieldInterpolator id="widthInterpolator" key="[0.0, 0.5, 1.0]" fieldToInterp="VideoPlayer.width" />
@@ -29,7 +31,9 @@
             <Vector2DFieldInterpolator id="translationInterpolator" key="[0.0, 0.5, 1.0]" fieldToInterp="VideoPlayer.translation" />
         </Animation>
         <Rectangle id="fullScreenHint" height="26" color="0x000000" opacity="0.8" visible="false">
-            <Label id="fullScreenHintLabel" text="Press Options (*) for full screen" height="26" color="0xFFFFFF" horizAlign="center" vertAlign="center" font="font:SmallestSystemFont" />
+            <Label id="fullScreenHintLabel" text="Press Options (*) for full screen" height="26" color="0xFFFFFF" horizAlign="center" vertAlign="center">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
             <Timer id="fullScreenHintTimer" duration="5" />
             <Timer id="trickplayUITimer" duration="5" />
         </Rectangle>

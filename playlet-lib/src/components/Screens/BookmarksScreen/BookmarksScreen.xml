@@ -11,21 +11,24 @@
                 <Label
                     width="920"
                     horizAlign="center"
-                    font="font:SmallSystemFont"
                     text="You currently have no bookmarks."
-                    wrap="true" />
+                    wrap="true">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                </Label>
                 <Label
                     width="920"
                     horizAlign="center"
-                    font="font:SmallSystemFont"
                     text="To add bookmarks, long-press 'OK' on a video, playlist or channel."
-                    wrap="true" />
+                    wrap="true">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                </Label>
                 <Label
                     width="920"
                     horizAlign="center"
-                    font="font:SmallSystemFont"
                     text="Please note that Bookmarks is an experimental feature."
-                    wrap="true" />
+                    wrap="true">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                </Label>
             </LayoutGroup>
         </Group>
         <Group id="yesBookmarks" visible="false">
@@ -43,7 +46,7 @@
                 showRowLabel="[true]"
                 rowFocusAnimationStyle="floatingfocus"
                 variableWidthItems="true"
-                focusBitmapUri="pkg:/images/focus-glow-padding-30.$$RES$$.9.png" />
+                focusBitmapUri="pkg:/images/focus-outline.$$RES$$.9.png" />
         </Group>
     </children>
 </component>

@@ -27,26 +27,28 @@
                 translation="[190,10]">
                 <Label
                     width="300"
-                    font="font:SmallestBoldSystemFont"
                     horizAlign="center"
                     color="0x262626ff"
                     text="Added to queue">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
                 </Label>
                 <Label
                     id="line1Label"
                     width="300"
-                    font="font:SmallestSystemFont"
                     maxLines="3"
                     color="0x262626ff"
-                    wrap="true" />
+                    wrap="true">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+                </Label>
             </LayoutGroup>
             <Label
                 id="hintLabel"
                 width="480"
-                font="font:SmallestSystemFont"
                 color="0x262626ff"
                 text="Press and hold Options (*) to open the queue"
-                translation="[10,120]" />
+                translation="[10,120]">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
         </Poster>
         <Animation
             id="translationAnimation"

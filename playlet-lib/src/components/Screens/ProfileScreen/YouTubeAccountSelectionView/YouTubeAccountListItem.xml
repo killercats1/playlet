@@ -23,8 +23,12 @@
             </Poster>
 
             <LayoutGroup layoutDirection="vert" translation="[8, 0]" itemSpacings="[10]">
-                <Label id="text1Label" font="font:SmallestBoldSystemFont" />
-                <Label id="text2Label" font="font:SmallestSystemFont" />
+                <Label id="text1Label">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+                </Label>
+                <Label id="text2Label">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+                </Label>
             </LayoutGroup>
         </LayoutGroup>
     </children>

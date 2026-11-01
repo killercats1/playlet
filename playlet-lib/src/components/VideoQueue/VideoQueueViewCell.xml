@@ -29,8 +29,9 @@
                     id="durationLabel"
                     horizAlign="center"
                     vertAlign="center"
-                    font="font:SmallestSystemFont"
-                    translation="[8, 0]" />
+                    translation="[8, 0]">
+                    <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+                </Label>
             </Rectangle>
         </Poster>
         <Poster
@@ -42,9 +43,10 @@
         <Label
             id="titleLabel"
             width="260"
-            font="font:SmallestBoldSystemFont"
             maxLines="3"
             wrap="true"
-            translation="[172,2]" />
+            translation="[172,2]">
+            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+        </Label>
     </children>
 </component>

@@ -15,13 +15,13 @@
             width="720"
             height="600"
             translation="[300,60]"
-            color="#242424">
+            color="#161616">
             <Label
                 width="720"
                 horizAlign="center"
                 translation="[0,38]"
                 text="Categories">
-                <Font role="font" uri="font:SystemFontFile" size="24" />
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" />
             </Label>
 
             <MarkupGrid

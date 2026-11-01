@@ -6,8 +6,8 @@
         <LabelList
             translation="[130,92]"
             itemSize="[1020,48]"
-            font="font:SmallestBoldSystemFont"
             drawFocusFeedback="false">
+            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
             <ContentNode id="KeyValueListContent" role="content">
             </ContentNode>
         </LabelList>

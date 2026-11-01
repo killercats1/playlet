@@ -70,7 +70,9 @@
         <!-- ===================== PiP fullScreenHint (coordinator child, NOT in Chrome) ===================== -->
         <!-- Strip + centered label along the bottom of the shrunk player; sized to minRect in OnNodeReady. -->
         <Rectangle id="fullScreenHint" height="26" color="0x000000" opacity="0.8" visible="false">
-            <Label id="fullScreenHintLabel" text="Press Options (*) for full screen" height="26" color="0xFFFFFF" horizAlign="center" vertAlign="center" font="font:SmallestSystemFont" />
+            <Label id="fullScreenHintLabel" text="Press Options (*) for full screen" height="26" color="0xFFFFFF" horizAlign="center" vertAlign="center">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
         </Rectangle>
 
         <!-- ===================== Chrome group (the HUD, faded as one opacity unit) ===================== -->
@@ -94,12 +96,12 @@
                      secondary title flowing under however many lines the title takes. -->
                 <LayoutGroup translation="[68, 40]" layoutDirection="vert" itemSpacings="[5]">
                     <Label id="titleLabel" width="900" wrap="true" maxLines="3"
-                        color="0xFEFEFEFF" horizAlign="left">
-                        <Font role="font" uri="font:BoldSystemFontFile" size="30" />
+                        color="0xF1F1F1FF" horizAlign="left">
+                        <Font role="font" uri="pkg:/fonts/Roboto-Bold.ttf" size="30" />
                     </Label>
                     <Label id="secondaryTitleLabel" width="900" height="26"
-                        color="0xFEFEFEFF" horizAlign="left" vertAlign="top" wrap="false">
-                        <Font role="font" uri="font:SystemFontFile" size="24" />
+                        color="0xF1F1F1FF" horizAlign="left" vertAlign="top" wrap="false">
+                        <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" />
                     </Label>
                 </LayoutGroup>
                 <Clock id="clock" />

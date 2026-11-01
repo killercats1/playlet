@@ -24,19 +24,22 @@
                 id="authorLabel"
                 width="196"
                 maxLines="2"
-                wrap="true"
-                font="font:SmallestBoldSystemFont" />
+                wrap="true">
+                <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+            </Label>
             <Label
                 id="subCountLabel"
                 width="196"
                 maxLines="2"
-                wrap="true"
-                font="font:SmallestSystemFont" />
+                wrap="true">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
             <Label
                 id="handleLabel"
                 width="196"
-                height="25"
-                font="font:SmallestSystemFont" />
+                height="25">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
         </LayoutGroup>
     </children>
 </component>

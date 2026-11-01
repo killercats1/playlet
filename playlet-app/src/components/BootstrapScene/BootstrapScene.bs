@@ -6,7 +6,7 @@ import "pkg:/source/Registry.bs"
 
 function Init() as void
     m.scene = m.top.getScene()
-    m.top.backgroundColor = "#242424FF"
+    m.top.backgroundColor = "#161616FF"
     m.top.backgroundURI = ""
 
     m.loadingIndicator = m.top.findNode("LoadingIndicator")

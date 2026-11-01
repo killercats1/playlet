@@ -51,13 +51,13 @@
         <!-- left label. VOD: counts up (short). LIVE: the translated "Rewind live TV" — width is generous so
              no language clips (e.g. the French string); left-aligned, so the extra width paints nothing. -->
         <Label id="currentLabel" translation="[0, 24]" width="700" height="24"
-            color="0xFEFEFEFF" horizAlign="left" vertAlign="top">
-            <Font role="font" uri="font:SystemFontFile" size="24" />
+            color="0xF1F1F1FF" horizAlign="left" vertAlign="top">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" />
         </Label>
         <!-- right label. VOD: counts down. LIVE: offset M:SS (hidden at edge). -->
         <Label id="remainingLabel" translation="[1024, 24]" width="120" height="24"
-            color="0xFEFEFEFF" horizAlign="right" vertAlign="top">
-            <Font role="font" uri="font:SystemFontFile" size="24" />
+            color="0xF1F1F1FF" horizAlign="right" vertAlign="top">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" />
         </Label>
         <!-- LIVE bullet: shown only at the edge. -->
         <Poster id="bullet" visible="false"
@@ -65,10 +65,12 @@
             translation="[1056, 24]" blendColor="0xD53E5AFF" loadDisplayMode="noScale" />
         <!-- LIVE badge: shown only at the edge. -->
         <Label id="liveLabel" visible="false" translation="[1080, 24]" height="30"
-            text="LIVE" color="0xFEFEFEFF" horizAlign="left" vertAlign="top">
-            <Font role="font" uri="font:BoldSystemFontFile" size="30" />
+            text="LIVE" color="0xF1F1F1FF" horizAlign="left" vertAlign="top">
+            <Font role="font" uri="pkg:/fonts/Roboto-Bold.ttf" size="30" />
         </Label>
         <Label id="chapterLabel" translation="[111, 25]" width="350" height="25"
-            color="0xFEFEFEFF" horizAlign="center" vertAlign="center" font="font:SmallestSystemFont" />
+            color="0xF1F1F1FF" horizAlign="center" vertAlign="center">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+        </Label>
     </children>
 </component>

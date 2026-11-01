@@ -10,14 +10,14 @@
             color="#000000"
             opacity="0.5">
         </Rectangle>
-        <Font id="HeaderFont" uri="font:MediumSystemFontFile" size="18" />
-        <Font id="ItemFont" uri="font:SystemFontFile" size="18" />
-        <Font id="ItemFocusedFont" uri="font:MediumSystemFontFile" size="18" />
+        <Font id="HeaderFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+        <Font id="ItemFont" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+        <Font id="ItemFocusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
         <Rectangle
             width="1200"
             height="543"
             translation="[40,84]"
-            color="#242424">
+            color="#161616">
 
             <LayoutGroup
                 layoutDirection="horiz"

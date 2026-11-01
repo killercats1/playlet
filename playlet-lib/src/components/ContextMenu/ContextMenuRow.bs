@@ -1,3 +1,12 @@
+function Init()
+    m.regularFont = CreateObject("roSGNode", "Font")
+    m.regularFont.uri = "pkg:/fonts/Roboto-Regular.ttf"
+    m.regularFont.size = 18
+    m.boldFont = CreateObject("roSGNode", "Font")
+    m.boldFont.uri = "pkg:/fonts/Roboto-Medium.ttf"
+    m.boldFont.size = 18
+end function
+
 function OnContentSet() as void
     content = m.top.itemContent
     if content = invalid
@@ -10,20 +19,20 @@ end function
 function OnItemHasFocus()
     hasFocus = m.top.itemHasFocus
     if hasFocus
-        m.top.font = "font:SmallestBoldSystemFont"
+        m.top.font = m.boldFont
         m.top.color = "#262626ff"
     else
-        m.top.font = "font:SmallestSystemFont"
+        m.top.font = m.regularFont
         m.top.color = "#EBEBEBFF"
     end if
 end function
 
 function OnFocusPercent()
     if m.top.focusPercent > 0.5
-        m.top.font = "font:SmallestBoldSystemFont"
+        m.top.font = m.boldFont
         m.top.color = "#262626FF"
     else
-        m.top.font = "font:SmallestSystemFont"
+        m.top.font = m.regularFont
         m.top.color = "#EBEBEBFF"
     end if
 end function

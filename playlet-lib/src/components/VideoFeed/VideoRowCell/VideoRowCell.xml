@@ -11,8 +11,8 @@
         <field id="percentDurationWatched" type="float" onChange="OnPercentDurationWatched" />
     </interface>
     <children>
-        <Font id="smallestSystemFont" uri="font:SystemFontFile" size="18" />
-        <Font id="smallestBoldSystemFont" uri="font:MediumSystemFontFile" size="18" />
+        <Font id="smallestSystemFont" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+        <Font id="smallestBoldSystemFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
 
         <LayoutGroup
             itemSpacings="[24,5,5]">
@@ -36,8 +36,9 @@
                         id="durationLabel"
                         horizAlign="center"
                         vertAlign="center"
-                        font="font:SmallestSystemFont"
-                        translation="[8, 0]" />
+                        translation="[8, 0]">
+                        <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+                    </Label>
                 </Rectangle>
                 <Rectangle
                     id="progressRect"
@@ -51,19 +52,22 @@
             <Label
                 id="titleLabel"
                 width="350"
-                font="font:SmallestBoldSystemFont"
                 maxLines="2"
-                wrap="true" />
+                wrap="true">
+                <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+            </Label>
             <Label
                 id="authorLabel"
                 width="350"
-                height="25"
-                font="font:SmallestSystemFont" />
+                height="25">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
             <Label
                 id="viewCountDateLabel"
                 width="350"
-                height="25"
-                font="font:SmallestSystemFont" />
+                height="25">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
         </LayoutGroup>
     </children>
 </component>

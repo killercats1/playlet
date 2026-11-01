@@ -31,7 +31,7 @@
             vertAlign="center"
             translation="[55,8]"
             visible="false">
-            <Font role="font" uri="font:SystemFontFile" size="22" />
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
         </Label>
 
         <Label
@@ -40,7 +40,7 @@
             vertAlign="center"
             translation="[55,8]"
             visible="false">
-            <Font role="font" uri="font:MediumSystemFontFile" size="22" />
+            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" />
         </Label>
 
     </children>

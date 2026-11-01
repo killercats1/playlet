@@ -13,7 +13,7 @@
             id="SideBar"
             width="170"
             height="720"
-            color="#242424"
+            color="#161616"
             opacity="0.9"
             translation="[62,0]"
             visible="false">
@@ -23,7 +23,7 @@
             id="Background"
             height="720"
             width="62"
-            color="#242424"
+            color="#161616"
             opacity="0.9">
 
             <Poster

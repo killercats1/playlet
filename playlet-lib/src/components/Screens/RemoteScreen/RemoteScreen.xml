@@ -12,12 +12,13 @@
             <Label
                 height="720"
                 width="920"
-                font="font:SmallSystemFont"
                 horizAlign="center"
                 vertAlign="center"
                 text="Could not get IP address: are we connected to the internet?"
                 wrap="true"
-                translation="[145,0]" />
+                translation="[145,0]">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+            </Label>
         </Group>
         <Group id="yesInternet" visible="false">
             <LayoutGroup
@@ -57,10 +58,11 @@
                         <Label
                             width="400"
                             height="30"
-                            font="font:SmallBoldSystemFont"
                             horizAlign="center"
                             vertAlign="center"
-                            text="Scan the QR code" />
+                            text="Scan the QR code">
+                            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" />
+                        </Label>
                         <QrCodePoster
                             id="WebAppQrCodePoster"
                             height="400"
@@ -72,9 +74,10 @@
                             id="WebAppUrlLabel"
                             width="400"
                             height="30"
-                            font="font:SmallBoldSystemFont"
                             horizAlign="center"
-                            vertAlign="center" />
+                            vertAlign="center">
+                            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" />
+                        </Label>
                     </LayoutGroup>
 
                     <LayoutGroup
@@ -84,28 +87,33 @@
                         translation="[0,245]">
                         <LayoutGroup layoutDirection="horiz" itemSpacings="[15]">
                             <!-- bs:disable-next-line LOCALE_MISSING_TRANSLATIONS -->
-                            <Label text="1."
-                                font="font:SmallSystemFont" />
+                            <Label text="1.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                             <Label
-                                font="font:SmallSystemFont"
                                 width="380"
                                 wrap="true"
-                                text="On your phone, connect to the same Wi-Fi network as this device." />
+                                text="On your phone, connect to the same Wi-Fi network as this device.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                         </LayoutGroup>
                         <LayoutGroup layoutDirection="horiz" itemSpacings="[15]">
                             <!-- bs:disable-next-line LOCALE_MISSING_TRANSLATIONS -->
-                            <Label text="2."
-                                font="font:SmallSystemFont" />
+                            <Label text="2.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                             <Label
-                                font="font:SmallSystemFont"
                                 width="380"
                                 wrap="true"
-                                text="Open the YouTube app on your phone." />
+                                text="Open the YouTube app on your phone.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                         </LayoutGroup>
                         <LayoutGroup layoutDirection="horiz" itemSpacings="[15]">
                             <!-- bs:disable-next-line LOCALE_MISSING_TRANSLATIONS -->
-                            <Label text="3."
-                                font="font:SmallSystemFont" />
+                            <Label text="3.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                             <!-- bs:disable-next-line LOCALE_MISSING_TRANSLATIONS -->
                             <MultiStyleLabel text="Tap the cast icon and select this device."
                                 id="WifiInstructionWithDeviceNameLabel"
@@ -115,13 +123,13 @@
                         <Label
                             text="Roku connected to:"
                             translation="[0,220]">
-                            <Font role="font" uri="font:SystemFontFile" size="20" />
+                            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" />
                         </Label>
                         <Label
                             id="WifiNameLabel"
                             color="#4287f5"
                             translation="[0,250]">
-                            <Font role="font" uri="font:MediumSystemFontFile" size="28" />
+                            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" />
                         </Label>
                     </LayoutGroup>
 
@@ -132,39 +140,45 @@
                         translation="[0,245]">
                         <LayoutGroup layoutDirection="horiz" itemSpacings="[15]">
                             <!-- bs:disable-next-line LOCALE_MISSING_TRANSLATIONS -->
-                            <Label text="1."
-                                font="font:SmallSystemFont" />
+                            <Label text="1.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                             <Label
-                                font="font:SmallSystemFont"
                                 width="380"
                                 wrap="true"
-                                text="On your phone, open the YouTube app." />
+                                text="On your phone, open the YouTube app.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                         </LayoutGroup>
                         <LayoutGroup layoutDirection="horiz" itemSpacings="[15]">
                             <!-- bs:disable-next-line LOCALE_MISSING_TRANSLATIONS -->
-                            <Label text="2."
-                                font="font:SmallSystemFont" />
+                            <Label text="2.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                             <Label
-                                font="font:SmallSystemFont"
                                 width="380"
                                 wrap="true"
-                                text="Tap the cast icon." />
+                                text="Tap the cast icon.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                         </LayoutGroup>
                         <LayoutGroup layoutDirection="horiz" itemSpacings="[15]">
                             <!-- bs:disable-next-line LOCALE_MISSING_TRANSLATIONS -->
-                            <Label text="3."
-                                font="font:SmallSystemFont" />
+                            <Label text="3.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                             <Label
-                                font="font:SmallSystemFont"
                                 width="380"
                                 wrap="true"
-                                text="Tap 'Link with TV code' and enter the code below." />
+                                text="Tap 'Link with TV code' and enter the code below.">
+                                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+                            </Label>
                         </LayoutGroup>
                         <Label
                             id="LinkCodeLabel"
-                            font="font:LargeBoldSystemFont"
                             color="#4287f5">
-                            <Font role="font" uri="font:MediumSystemFontFile" size="48" />
+                            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" />
+                            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="48" />
                         </Label>
                     </LayoutGroup>
                 </Group>

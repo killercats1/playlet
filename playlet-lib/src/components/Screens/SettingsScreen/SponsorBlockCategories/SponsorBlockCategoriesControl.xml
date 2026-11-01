@@ -13,9 +13,9 @@
             showFocusFootprint="true" />
         <Label id="DescriptionLabel"
             width="450"
-            color="0xb4b4b4ff"
+            color="0xaaaaaaff"
             wrap="true">
-            <Font role="font" uri="font:SystemFontFile" size="18" />
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
         </Label>
     </children>
 </component>

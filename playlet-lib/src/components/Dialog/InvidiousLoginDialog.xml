@@ -26,7 +26,7 @@
                 text="Scan the QR code"
                 horizAlign="center"
                 wrap="true" width="400">
-                <Font role="font" uri="font:SystemFontFile" size="24" />
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" />
             </Label>
             <QrCodePoster
                 id="QrCodePoster"
@@ -41,7 +41,7 @@
                 horizAlign="center"
                 width="400"
                 translation="[0, 380]">
-                <Font role="font" uri="font:MediumSystemFontFile" size="18" />
+                <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
             </Label>
         </StdDlgSideCardArea>
     </children>

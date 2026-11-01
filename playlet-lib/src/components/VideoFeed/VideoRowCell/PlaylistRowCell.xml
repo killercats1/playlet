@@ -32,27 +32,31 @@
                         id="videoCountLabel"
                         horizAlign="center"
                         vertAlign="center"
-                        font="font:SmallestSystemFont"
-                        translation="[8, 0]" />
+                        translation="[8, 0]">
+                        <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+                    </Label>
                 </Rectangle>
             </Poster>
 
             <Label
                 id="titleLabel"
                 width="350"
-                font="font:SmallestBoldSystemFont"
                 maxLines="2"
-                wrap="true" />
+                wrap="true">
+                <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+            </Label>
             <Label
                 id="authorLabel"
                 width="350"
-                height="25"
-                font="font:SmallestSystemFont" />
+                height="25">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
             <Label
                 id="updatedLabel"
                 width="350"
-                height="25"
-                font="font:SmallestSystemFont" />
+                height="25">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
         </LayoutGroup>
     </children>
 </component>

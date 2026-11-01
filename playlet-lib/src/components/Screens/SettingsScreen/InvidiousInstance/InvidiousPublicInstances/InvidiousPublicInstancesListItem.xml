@@ -19,14 +19,25 @@
     </interface>
     <children>
         <LayoutGroup layoutDirection="horiz">
-            <Label id="nameLabel" font="font:SmallestSystemFont" />
-            <Label id="versionLabel" font="font:SmallestSystemFont" />
-            <Label id="usersLabel" font="font:SmallestSystemFont" />
-            <Label id="signupLabel" font="font:SmallestSystemFont" />
-            <Label id="locationLabel" font="font:SmallestSystemFont">
+            <Label id="nameLabel">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
+            <Label id="versionLabel">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
+            <Label id="usersLabel">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
+            <Label id="signupLabel">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
+            <Label id="locationLabel">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
                 <Poster id="flagEmoji" width="16" height="16" />
             </Label>
-            <Label id="healthLabel" font="font:SmallestSystemFont" />
+            <Label id="healthLabel">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+            </Label>
         </LayoutGroup>
     </children>
 </component>
