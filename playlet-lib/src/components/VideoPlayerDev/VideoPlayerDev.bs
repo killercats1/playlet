@@ -564,6 +564,8 @@ end function
 function ActivateButton(index as integer) as void
     if index = PlayerCoordinatorLogic.PlayerButton.PlayPause
         TogglePlayPause()
+    else if index = PlayerCoordinatorLogic.PlayerButton.NextVideo
+        PlayNextVideo()
     else if index = PlayerCoordinatorLogic.PlayerButton.Minimize
         MinimizeReset()
         VideoQueueUtils.ToggleVideoPictureInPicture(m.videoQueue)
@@ -571,6 +573,14 @@ function ActivateButton(index as integer) as void
         ToggleCaptions()
     end if
     SyncFocus()
+end function
+
+'' The Next button: the next video in the queue, or else the first recommended one (even with autoplay off).
+' Nothing to play: the button pulses.
+function PlayNextVideo() as void
+    if not VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences, true)
+        m.buttonRow.nudge = true
+    end if
 end function
 
 ' The CC button: Playlet draws the captions itself (CaptionsOverlay), so the TV's own caption setting is never

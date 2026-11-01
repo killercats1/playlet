@@ -48,8 +48,9 @@ namespace PlayerCoordinatorLogic
     ' (m.buttons / its buttonCount field) — there is no separate count constant to keep in sync.
     enum PlayerButton
         PlayPause = 0
-        Minimize = 1
-        Captions = 2
+        NextVideo = 1
+        Minimize = 2
+        Captions = 3
     end enum
 
     ' The two focus targets above/at the trackbar: the bar itself (Left/Right scrub, the cursor grows) and the

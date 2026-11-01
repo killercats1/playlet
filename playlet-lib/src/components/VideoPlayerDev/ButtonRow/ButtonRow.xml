@@ -24,11 +24,13 @@
         <field id="nudge" type="boolean" alwaysNotify="true" />
     </interface>
     <children>
-        <!-- play/pause, centered on screen (x=640). -->
+        <!-- play/pause + next video, centered on screen (x=640). -->
         <Group id="CenterCluster">
             <VideoPlayerButton id="PlayPauseButton"
                 iconUri="pkg:/images/icons/player/play.png"
                 iconUri2="pkg:/images/icons/player/pause.png" />
+            <VideoPlayerButton id="NextButton"
+                iconUri="pkg:/images/icons/player/next.png" />
         </Group>
         <!-- minimize + captions, right-aligned to the trackbar's right edge (x=1212). -->
         <Group id="RightCluster">

@@ -102,13 +102,15 @@ namespace VideoQueueUtils
         return false
     end function
 
-    function PlayNext(videoQueue as object, invidiousNode as object, preferences as object) as boolean
+    ' force: the viewer asked for the next video (the player's Next button), so a recommended video plays even
+    ' with autoplay off.
+    function PlayNext(videoQueue as object, invidiousNode as object, preferences as object, force = false as boolean) as boolean
         if videoQueue.hasNext
             videoQueue.next = true
             return true
         end if
 
-        if preferences["playback.autoplay"] <> true
+        if not force and preferences["playback.autoplay"] <> true
             return false
         end if
 
