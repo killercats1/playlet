@@ -9,10 +9,13 @@
         <field id="duration" type="string" alias="durationLabel.text" />
         <field id="thumbnailUri" type="string" alias="thumbnail.uri" />
         <field id="percentDurationWatched" type="float" onChange="OnPercentDurationWatched" />
+        <!-- focused: after a moment, the thumbnail cycles through frames from the video -->
+        <field id="previewActive" type="boolean" onChange="OnPreviewActiveChange" />
     </interface>
     <children>
         <Font id="smallestSystemFont" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
         <Font id="smallestBoldSystemFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="18" />
+        <Timer id="previewTimer" duration="1.2" repeat="true" />
 
         <LayoutGroup
             itemSpacings="[24,5,5]">

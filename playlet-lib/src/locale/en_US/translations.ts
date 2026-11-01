@@ -1257,6 +1257,14 @@
         <translation>Up next</translation>
     </message>
     <message>
+        <source>Thumbnail previews</source>
+        <translation>Thumbnail previews</translation>
+    </message>
+    <message>
+        <source>The selected video's thumbnail cycles through moments from the video.</source>
+        <translation>The selected video&apos;s thumbnail cycles through moments from the video.</translation>
+    </message>
+    <message>
         <source>Refresh Bookmarks</source>
         <translation>Refresh Bookmarks</translation>
     </message>

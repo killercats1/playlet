@@ -1,3 +1,11 @@
+' The focused video tile previews its video (VideoRowCell.previewActive).
+function OnFocusChanged() as void
+    focused = m.top.focusPercent > 0.99 and m.top.rowHasFocus and m.top.rowListHasFocus and m.top.type = "video"
+    if m.top.videoRowCellPreviewActive <> focused
+        m.top.videoRowCellPreviewActive = focused
+    end if
+end function
+
 ' Note: we use aliases and not references to sub cells that we initialize on Init() because
 '       of a rare bug / race condition where the cells are not initialized
 function OnContentSet() as void
@@ -26,6 +34,8 @@ function OnContentSet() as void
     end if
 
     m.top.type = content.type
+    ' a recycled cell: re-evaluate the preview for its new content
+    OnFocusChanged()
 
     visibleSet = false
     for each key in visibleProperties

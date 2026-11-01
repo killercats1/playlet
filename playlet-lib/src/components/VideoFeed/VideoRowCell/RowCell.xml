@@ -3,6 +3,11 @@
         <field id="type" type="string" />
         <field id="itemContent" type="node" onChange="OnContentSet" />
         <field id="index" type="integer" />
+        <!-- set by the RowList: which cell holds focus (drives the video cell's thumbnail preview) -->
+        <field id="focusPercent" type="float" onChange="OnFocusChanged" />
+        <field id="rowHasFocus" type="boolean" onChange="OnFocusChanged" />
+        <field id="rowListHasFocus" type="boolean" onChange="OnFocusChanged" />
+        <field id="videoRowCellPreviewActive" type="boolean" alias="VideoRowCell.previewActive" />
 
         <field id="videoRowCellVisible" type="boolean" alias="VideoRowCell.visible" />
         <field id="playlistRowCellVisible" type="boolean" alias="PlaylistRowCell.visible" />

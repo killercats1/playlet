@@ -72,6 +72,13 @@
         type: "boolean",
         defaultValue: false,
       },
+      {
+        displayText: "Thumbnail previews",
+        key: "content_feed.thumbnail_previews",
+        description: "The selected video's thumbnail cycles through moments from the video.",
+        type: "boolean",
+        defaultValue: true,
+      },
     ],
   },
   {

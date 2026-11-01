@@ -10,6 +10,48 @@ function Init()
     m.smallestSystemFont = m.top.FindNode("smallestSystemFont")
     m.smallestBoldSystemFont = m.top.FindNode("smallestBoldSystemFont")
     m.progressRect = m.top.FindNode("progressRect")
+    m.previewTimer = m.top.FindNode("previewTimer")
+    m.previewTimer.ObserveField("fire", FuncName(OnPreviewTick))
+    m.previewFrame = 0
+end function
+
+' Thumbnail preview: while the tile holds focus, cycle through the three frames YouTube auto-generates from
+' the video (25%, 50%, 75%), then back to the thumbnail. Light on purpose: no video decoding and no extra
+' API requests, just images from i.ytimg.com.
+function OnPreviewActiveChange() as void
+    m.previewTimer.control = "stop"
+    m.previewFrame = 0
+    content = m.top.itemContent
+    if content <> invalid
+        m.top.thumbnailUri = content.thumbnail
+    end if
+    if m.top.previewActive and PreviewsEnabled()
+        m.previewTimer.control = "start"
+    end if
+end function
+
+function OnPreviewTick() as void
+    content = m.top.itemContent
+    if content = invalid or not m.top.previewActive or StringUtils.IsNullOrEmpty(content.videoId)
+        m.previewTimer.control = "stop"
+        return
+    end if
+    m.previewFrame = (m.previewFrame + 1) mod 4
+    if m.previewFrame = 0
+        m.top.thumbnailUri = content.thumbnail
+    else
+        m.top.thumbnailUri = `https://i.ytimg.com/vi/${content.videoId}/mq${m.previewFrame}.jpg`
+    end if
+end function
+
+function PreviewsEnabled() as boolean
+    if m.preferences = invalid
+        m.preferences = m.top.getScene().findNode("Preferences")
+    end if
+    if m.preferences = invalid
+        return false
+    end if
+    return m.preferences["content_feed.thumbnail_previews"] <> false
 end function
 
 function OnContentSet() as void

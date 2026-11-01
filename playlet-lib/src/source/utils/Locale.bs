@@ -270,6 +270,8 @@ namespace Locale
         ContentPreferences = "Feed preferences"
         DisableShorts = "Disable Shorts"
         DisableShortsDescription = "Disable short videos."
+        ThumbnailPreviews = "Thumbnail previews"
+        ThumbnailPreviewsDescription = "The selected video's thumbnail cycles through moments from the video."
 
         ' "Invidious" is used as node id, so we can't use it before refactoring node ids.
         ' Either way, Invidious doesn't translate, so it's fine to skip it here
