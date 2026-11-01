@@ -314,7 +314,7 @@ namespace Locale
         ClearPoTokensDescription = "Clear all stored PoTokens."
         PoTokensCleared = "PoTokens cleared."
         EnableDiagnostics = "Enable Diagnostics"
-        EnableDiagnosticsDescription = "Help improve Playlet by enabling diagnostics. This will send anonymous diagnotics data to the developer."
+        EnableDiagnosticsDescription = "Save diagnostics (errors and crash reports) to a log file on this TV. Nothing is sent anywhere."
     end enum
 
     @locale

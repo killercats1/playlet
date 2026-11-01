@@ -39,10 +39,10 @@ function GetPlayletLibUrls() as object
             return savedUrls
         end if
 
-        githubSquashFs = { type: "github-squashfs", link: Manifest.ReadValue("playlet_lib_squashfs_remote_url") }
-        githubZip = { type: "github-zip", link: Manifest.ReadValue("playlet_lib_zip_remote_url") }
+        ' This fork always runs the lib bundled in the package, so its own changes are what runs,
+        ' instead of downloading the latest upstream release from GitHub.
         embedded = { type: "embedded-zip", link: Manifest.ReadValue("playlet_lib_zip_embedded_url") }
-        return [githubSquashFs, githubZip, embedded]
+        return [embedded]
     #end if
 end function
 

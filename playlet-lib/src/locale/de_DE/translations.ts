@@ -1349,10 +1349,6 @@
         <translation>Auf YouTube öffnen</translation>
     </message>
     <message>
-        <source>Help improve Playlet by enabling diagnostics. This will send anonymous diagnotics data to the developer.</source>
-        <translation>Helfen Sie mit, Playlet zu verbessern, indem Sie die diagnostische Datenerhebung aktivieren. Diese wird dem Entwickler anonymisierte Nutzungsdaten schicken.</translation>
-    </message>
-    <message>
         <source>Enable Diagnostics</source>
         <translation>Diagnostische Datenerhebung aktivieren</translation>
     </message>

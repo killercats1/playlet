@@ -56,6 +56,14 @@
       link: `${host}/logs/app_logs_previous.txt`,
     },
     {
+      displayText: "Diagnostics log",
+      link: `${host}/logs/diagnostics.txt`,
+    },
+    {
+      displayText: "Diagnostics log (previous run)",
+      link: `${host}/logs/diagnostics_previous.txt`,
+    },
+    {
       displayText: "Preferences",
       link: `${host}/api/preferences`,
     },
@@ -190,6 +198,7 @@ ${JSON.stringify(profilesInfo, null, 2)}
     // - app_state.json
     // - app_logs.txt
     // - app_logs_previous.txt
+    // - diagnostics.txt, diagnostics_previous.txt (if diagnostics are enabled)
     // - playlet-registry.json
 
     try {
@@ -205,6 +214,14 @@ ${JSON.stringify(profilesInfo, null, 2)}
         await fetch(`${host}/logs/app_logs_previous.txt`)
       ).text();
       zip.file("app_logs_previous.txt", appLogsPrevious);
+
+      // Only present when diagnostics are enabled in settings.
+      for (const name of ["diagnostics.txt", "diagnostics_previous.txt"]) {
+        const response = await fetch(`${host}/logs/${name}`);
+        if (response.ok) {
+          zip.file(name, await response.text());
+        }
+      }
 
       await PlayletApi.showExportRegistryCode();
       const code = prompt("Enter the code you see on your Roku device");

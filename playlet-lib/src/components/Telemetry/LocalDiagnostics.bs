@@ -1,0 +1,86 @@
+import "pkg:/source/utils/StringUtils.bs"
+import "pkg:/source/utils/Types.bs"
+
+' Diagnostics are only ever written to a local file on the device; nothing is sent over the network.
+' The files can be read from the web app's Info page (served under /logs/).
+namespace LocalDiagnostics
+
+    const FOLDER = "cachefs:/logs"
+    const FILE = "cachefs:/logs/diagnostics.txt"
+    const FILE_PREVIOUS = "cachefs:/logs/diagnostics_previous.txt"
+    ' cachefs is shared and limited, so a single session's file is capped.
+    const MAX_FILE_BYTES = 2097152
+
+    class Writer
+        private buffer as object
+        private bytesWritten as integer = 0
+        private full as boolean = false
+
+        function new()
+            m.buffer = CreateObject("roByteArray")
+            CreateDirectory(FOLDER)
+            DeleteFile(FILE_PREVIOUS)
+            MoveFile(FILE, FILE_PREVIOUS)
+        end function
+
+        function WriteHeader(tags as object) as void
+            m.Append(`************* Session ${ValidString(tags["session_id"])} *************\n${FormatJson(tags)}\n`)
+        end function
+
+        function WriteEvent(event as object) as void
+            m.Append(LocalDiagnostics.FormatEvent(event))
+        end function
+
+        private function Append(text as string) as void
+            if m.full
+                return
+            end if
+            m.buffer.FromAsciiString(text)
+            if m.bytesWritten + m.buffer.Count() > MAX_FILE_BYTES
+                m.full = true
+                m.buffer.FromAsciiString(`[diagnostics log full: ${MAX_FILE_BYTES} bytes, further events dropped]\n`)
+            end if
+            m.buffer.AppendFile(FILE)
+            m.bytesWritten += m.buffer.Count()
+        end function
+    end class
+
+    function FormatEvent(event as object) as string
+        timestamp = ValidString(event.timestamp)
+        if timestamp = ""
+            timestamp = CreateObject("roDateTime").ToISOString()
+        end if
+
+        text = `[${timestamp}] [${UCase(ValidString(event.level))}] ${Redact(ToString(event.message))}\n`
+
+        if IsArray(event.attachments)
+            for each attachment in event.attachments
+                if IsAssociativeArray(attachment)
+                    text += `----- ${ValidString(attachment.filename)} -----\n${Redact(ValidString(attachment.data))}\n----- end ${ValidString(attachment.filename)} -----\n`
+                end if
+            end for
+        end if
+
+        return text
+    end function
+
+    ' Masks credentials that can show up in logged requests.
+    function Redact(text as dynamic) as dynamic
+        if StringUtils.IsNullOrEmpty(text)
+            return text
+        end if
+
+        authHeader = /Authorization: (?!<REDACTED>)[^\r\n]*/i
+        for each match in authHeader.MatchAll(text)
+            text = text.Replace(match[0], "Authorization: <REDACTED>")
+        end for
+
+        refreshToken = /("refresh_token"\s*:\s*)"[^"]*"/i
+        for each match in refreshToken.MatchAll(text)
+            text = text.Replace(match[0], `${match[1]}"<REDACTED>"`)
+        end for
+
+        return text
+    end function
+
+end namespace
