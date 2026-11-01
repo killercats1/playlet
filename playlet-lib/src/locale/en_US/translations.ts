@@ -1265,6 +1265,18 @@
         <translation>Up next</translation>
     </message>
     <message>
+        <source>All</source>
+        <translation>All</translation>
+    </message>
+    <message>
+        <source>News</source>
+        <translation>News</translation>
+    </message>
+    <message>
+        <source>Gaming</source>
+        <translation>Gaming</translation>
+    </message>
+    <message>
         <source>Sleep timer</source>
         <translation>Sleep timer</translation>
     </message>

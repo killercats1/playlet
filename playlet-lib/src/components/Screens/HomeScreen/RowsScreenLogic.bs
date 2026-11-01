@@ -27,6 +27,7 @@ function OnNodeReady()
         m.chipBar.observeFieldScoped("selected", FuncName(OnChipSelected))
         m.chipBar.observeFieldScoped("hasChips", FuncName(OnHasChipsChange))
         m.rowList.observeFieldScoped("content", FuncName(OnRowListContentChange))
+        m.chipBar.chips = TopicChips("")
     end if
 
     ' TODO:P1 home screen should only be refreshed when the user navigates to it
@@ -78,13 +79,40 @@ function OnHasChipsChange() as void
     end if
 end function
 
-' Reloads Recommended for the picked topic. The chip's token goes to the built-in backend as "chip" (not
-' "continuation", which paging adds on its own).
+' Playlet's own topic chips (YouTube sends none to the TV app); the backend maps each topic to a feed.
+function TopicChips(selectedTopic as string) as object
+    chips = [
+        { title: Tr(Locale.Chips.All), topic: "" }
+        { title: Tr(Locale.NavBar.Music), topic: "music" }
+        { title: Tr(Locale.Chips.News), topic: "news" }
+        { title: Tr(Locale.Chips.Gaming), topic: "gaming" }
+        { title: Tr(Locale.Feed.Live), topic: "live" }
+    ]
+    for each chip in chips
+        chip.isSelected = chip.topic = selectedTopic
+    end for
+    return chips
+end function
+
+' Reloads Recommended for the picked chip: one of Playlet's topics, or a YouTube chip (its token goes to the
+' built-in backend as "chip", not "continuation", which paging adds on its own).
 function OnChipSelected() as void
     chip = m.chipBar.selected
-    if not IsAssociativeArray(chip) or not IsString(chip.continuation)
+    if not IsAssociativeArray(chip)
         return
     end if
+    queryParams = invalid
+    if IsString(chip.topic)
+        if chip.topic <> ""
+            queryParams = { topic: chip.topic }
+        end if
+        m.chipBar.chips = TopicChips(chip.topic)
+    else if IsString(chip.continuation)
+        queryParams = { chip: chip.continuation }
+    else
+        return
+    end if
+
     feeds = m.rowList.feeds
     if not IsArray(feeds)
         return
@@ -93,7 +121,7 @@ function OnChipSelected() as void
         if IsArray(feed.feedSources)
             for each feedSource in feed.feedSources
                 if feedSource.id = RECOMMENDED_FEED_SOURCE_ID
-                    feedSource.queryParams = { chip: chip.continuation }
+                    feedSource.queryParams = queryParams
                 end if
             end for
         end if

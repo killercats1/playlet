@@ -318,6 +318,13 @@ namespace Http
                 options.onBehalfOfUser = activeIdentifyToken
             end if
 
+            ' Playlet's own topic chips on Home (YouTube sends none to the TV app): Music and News are the TV app's
+            ' signed-in topic pages, Gaming and Live are trending feeds.
+            topic = request.query.topic
+            if IsString(topic) and topic <> ""
+                return m.RespondTopic(response, topic, options, ValidString(request.query.continuation))
+            end if
+
             continuation = request.query.continuation
             if not StringUtils.IsNullOrEmpty(continuation)
                 options.continuation = continuation
@@ -359,6 +366,53 @@ namespace Http
             end if
             response.Json(recommended)
 
+            return true
+        end function
+
+        ' continuation: the "more" token from the previous page; the trending topics have a single page.
+        function RespondTopic(response as object, topic as string, options as object, continuation as string) as boolean
+            if continuation <> "" and topic <> "music" and topic <> "news"
+                response.Json({ "items": [] })
+                return true
+            end if
+            feeds = invalid
+            if topic = "music" or topic = "news"
+                if continuation <> ""
+                    options.continuation = continuation
+                end if
+                result = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_" + topic, options)
+                if result.error = invalid
+                    feeds = result.feeds
+                end if
+            else if topic = "gaming" or topic = "live"
+                trendingType = ""
+                if topic = "gaming"
+                    trendingType = "gaming"
+                end if
+                result = InnertubeService.GetTrending({ "type": trendingType, "disableShorts": options.disableShorts })
+                if result.error = invalid
+                    feeds = result.feeds
+                end if
+            end if
+
+            merged = invalid
+            if IsArray(feeds) and feeds.Count() > 0
+                merged = m.MergeFeeds(feeds)
+                if topic <> "music" and topic <> "news"
+                    merged.Delete("continuation")
+                end if
+            end if
+
+            if merged = invalid
+                if continuation <> ""
+                    response.Json({ "items": [] })
+                    return true
+                end if
+                response.Json({ "error": "Nothing for this topic right now" })
+                response.http_code = 500
+                return true
+            end if
+            response.Json(merged)
             return true
         end function
 
@@ -495,6 +549,24 @@ namespace Http
             accessToken = m.RequireAccessToken(request, response)
             if accessToken = invalid
                 return true
+            end if
+
+            ' First the TV app's own Music page (signed in, like the home feed), then YouTube Music (which may
+            ' refuse the TV sign-in).
+            musicOptions = {
+                "accessToken": accessToken
+                "disableShorts": true
+            }
+            if not StringUtils.IsNullOrEmpty(request.query.activeIdentifyToken)
+                musicOptions.onBehalfOfUser = request.query.activeIdentifyToken
+            end if
+            tvMusic = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_music", musicOptions)
+            if tvMusic.error = invalid and IsArray(tvMusic.feeds) and tvMusic.feeds.Count() > 0
+                merged = m.MergeFeeds(tvMusic.feeds)
+                if merged.items.Count() > 0
+                    response.Json({ "items": merged.items })
+                    return true
+                end if
             end if
 
             result = InnertubeMusic.GetHome(accessToken, request.query.activeIdentifyToken, invalid)

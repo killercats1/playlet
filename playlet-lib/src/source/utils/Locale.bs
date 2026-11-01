@@ -446,6 +446,13 @@ namespace Locale
     end enum
 
     @locale
+    enum Chips
+        All = "All"
+        News = "News"
+        Gaming = "Gaming"
+    end enum
+
+    @locale
     enum SleepTimer
         Title = "Sleep timer"
         Prompt = "Stop playback after:"

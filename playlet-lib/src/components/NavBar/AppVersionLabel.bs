@@ -9,13 +9,8 @@ end function
 
 ' TODO:P2: refactor and move to appropriate place, reuse with web app
 function GetAppVersion() as string
+    ' This fork is always sideloaded (app id "dev"), so no "-dev" suffix: the label matches the build's file name.
     version = "v" + LibManifestUtils.GetLibVersion()
-
-    roAppInfo = CreateObject("roAppInfo")
-    appId = roAppInfo.GetID()
-    if appId = "dev"
-        version += "-dev"
-    end if
 
     scene = m.top.getScene()
     if scene.playletLibLoadedUrl <> invalid

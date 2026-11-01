@@ -1,7 +1,7 @@
 import "pkg:/components/ContentNode/ProfileContentAuthTokenUtils.bs"
 import "pkg:/components/Services/Innertube/ShortsSequence.bs"
 
-' Loads the next batch of Shorts for the queue (endless Shorts). input: { more, invidious }
+' Loads the next batch of Shorts for the queue (endless Shorts). input: { more, videoId, invidious }
 @job("ShortsSequenceJob")
 function ExecuteJob() as void
     input = JobGetInput()
@@ -22,7 +22,7 @@ function ExecuteJob() as void
         end if
     end if
 
-    result = InnertubeShorts.GetMore(more, accessToken, onBehalfOfUser, JobGetCancellation())
+    result = InnertubeShorts.GetMore(more, ValidString(input.videoId), accessToken, onBehalfOfUser, JobGetCancellation())
     if JobIsCancelled()
         JobCancel()
         return

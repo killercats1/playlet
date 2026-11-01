@@ -74,7 +74,7 @@ function MaybeLoadMoreShorts() as void
     last.shortsMore = ""
 
     m.shortsJob = JobSystem.CreateCallback(OnShortsJobDone)
-    JobSystem.QueueJob(m.top.jobQueue, Jobs.ShortsSequenceJob, { more: more, invidious: m.top.invidious }, m.shortsJob)
+    JobSystem.QueueJob(m.top.jobQueue, Jobs.ShortsSequenceJob, { more: more, videoId: last.videoId, invidious: m.top.invidious }, m.shortsJob)
 end function
 
 function OnShortsJobDone(event as object) as void
@@ -99,8 +99,12 @@ function OnShortsJobDone(event as object) as void
         return
     end if
     continuation = ValidString(info.data.continuation)
+    lastNode = nodes[nodes.Count() - 1]
     if continuation <> ""
-        nodes[nodes.Count() - 1].addFields({ shortsMore: "c:" + continuation })
+        lastNode.addFields({ shortsMore: "c:" + continuation })
+    else
+        ' no sequence token (related Shorts): carry on from the last one
+        lastNode.addFields({ shortsMore: "v:" + lastNode.videoId })
     end if
     m.content.appendChildren(nodes)
     UpdateHasPreviousNext()

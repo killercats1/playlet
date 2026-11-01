@@ -10,8 +10,41 @@ import "pkg:/source/utils/Types.bs"
 namespace InnertubeShorts
 
     ' -> { items: [{ type: "video", videoId }], continuation } or { error }
-    ' more: "v:<videoId>" to start from a Short, "c:<token>" to continue.
-    function GetMore(more as string, accessToken as dynamic, onBehalfOfUser as dynamic, cancellation as dynamic) as object
+    ' more: "v:<videoId>" to start from a Short, "c:<token>" to continue. When YouTube's Shorts sequence gives
+    ' nothing, falls back to the Shorts YouTube recommends next to fallbackVideoId (no continuation then: the
+    ' queue goes on from the last of them).
+    function GetMore(more as string, fallbackVideoId as string, accessToken as dynamic, onBehalfOfUser as dynamic, cancellation as dynamic) as object
+        result = InnertubeShorts.GetFromSequence(more, accessToken, onBehalfOfUser, cancellation)
+        if result.error = invalid and IsArray(result.items) and result.items.Count() > 0
+            return result
+        end if
+        if fallbackVideoId = ""
+            return result
+        end if
+        related = InnertubeShorts.GetRelatedShorts(fallbackVideoId, accessToken, onBehalfOfUser, cancellation)
+        if related.error <> invalid
+            return { error: `${ValidString(result.error)}; related Shorts: ${related.error}` }
+        end if
+        return related
+    end function
+
+    ' The Shorts linked from a video's watch page (YouTube lists a Shorts shelf beside most videos).
+    function GetRelatedShorts(videoId as string, accessToken as dynamic, onBehalfOfUser as dynamic, cancellation as dynamic) as object
+        nextResponse = InnertubeShorts.Request("next", { "videoId": videoId }, accessToken, onBehalfOfUser, cancellation)
+        if nextResponse.error <> invalid
+            return nextResponse
+        end if
+        result = InnertubeShorts.ParseSequence(nextResponse.json, videoId)
+        if result.items.Count() = 0
+            return { error: "No related Shorts for " + videoId }
+        end if
+        ' a watch page token is no Shorts sequence token
+        result.continuation = ""
+        return result
+    end function
+
+    ' YouTube's Shorts sequence (reel_item_watch, then reel_watch_sequence).
+    function GetFromSequence(more as string, accessToken as dynamic, onBehalfOfUser as dynamic, cancellation as dynamic) as object
         excludeId = ""
         if more.StartsWith("v:")
             excludeId = more.Mid(2)

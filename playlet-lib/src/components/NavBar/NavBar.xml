@@ -40,7 +40,7 @@
                 opacity="0"
                 uri="pkg:/images/logo-dark.png">
                 <AppVersionLabel
-                    fontUri="font:BoldSystemFontFile"
+                    fontUri="pkg:/fonts/Roboto-Medium.ttf"
                     fontSize="16"
                     translation="[0, 48]" />
             </Poster>
@@ -55,8 +55,8 @@
                 vertFocusAnimationStyle="floatingFocus"
                 numRows="11"
                 scrollSpeed="99999"
-                itemSpacing="[0, 4]"
-                translation="[13, 104]">
+                itemSpacing="[0, 2]"
+                translation="[13, 122]">
             </MarkupList>
         </Rectangle>
 

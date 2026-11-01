@@ -196,7 +196,7 @@ function OnNodeReady()
         m.captionsOverlay.video = m.top
     end if
     m.buttonRow.captionsOn = m.captionsEnabled
-    m.buttonRow.sleepTimerOn = SleepTimerMinutesLeft() > 0
+    UpdateSleepTimerLabel(false)
     if m.captionsEnabled
         ApplyCaptionSuppression()
     end if
@@ -602,7 +602,7 @@ function ActivateButton(index as integer) as void
     else if index = PlayerCoordinatorLogic.PlayerButton.Subscribe
         ToggleSubscribe()
     else if index = PlayerCoordinatorLogic.PlayerButton.SleepTimer
-        ShowSleepTimerDialog()
+        CycleSleepTimer()
     end if
     SyncFocus()
 end function
@@ -825,31 +825,34 @@ function SleepTimerMinutesLeft() as integer
     return (left + 59) \ 60
 end function
 
-function ShowSleepTimerDialog() as void
-    minutesLeft = SleepTimerMinutesLeft()
-    message = Tr(Locale.SleepTimer.Prompt)
-    if minutesLeft > 0
-        message = Tr(Locale.SleepTimer.Active).Replace("%1", minutesLeft.ToStr())
-    end if
-    dialog = DialogUtils.ShowDialogEx({
-        title: Tr(Locale.SleepTimer.Title)
-        message: message
-        buttons: [Tr(Locale.SleepTimer.Off), Tr(Locale.SleepTimer.Minutes15), Tr(Locale.SleepTimer.Minutes30), Tr(Locale.SleepTimer.Hour1), Tr(Locale.SleepTimer.Hours2)]
-    })
-    if dialog = invalid
-        return
-    end if
-    dialog.observeField("buttonSelected", FuncName(OnSleepTimerDialogButton), ["buttonSelected"])
+' Each press of the moon steps the timer up: off -> 15 -> 30 -> 60 -> 120 minutes -> off (from a running timer,
+' to the next step above what's left). The label above the buttons shows what the timer says.
+function CycleSleepTimer() as void
+    steps = [15, 30, 60, 120]
+    left = SleepTimerMinutesLeft()
+    minutes = 0
+    for each stepMinutes in steps
+        if stepMinutes > left
+            minutes = stepMinutes
+            exit for
+        end if
+    end for
+    m.videoQueue.sleepTimerMinutes = minutes
+    UpdateSleepTimerLabel(true)
+    ArmAutoHide()
 end function
 
-function OnSleepTimerDialogButton(event as object) as void
-    index = event.getData()
-    choices = [0, 15, 30, 60, 120]
-    if not IsInt(index) or index < 0 or index >= choices.Count()
-        return
+' justChanged: also say "off" (otherwise the label only shows while a timer runs)
+function UpdateSleepTimerLabel(justChanged as boolean) as void
+    left = SleepTimerMinutesLeft()
+    m.buttonRow.sleepTimerOn = left > 0
+    if left > 0
+        m.buttonRow.sleepTimerText = Tr(Locale.SleepTimer.Active).Replace("%1", left.ToStr())
+    else if justChanged
+        m.buttonRow.sleepTimerText = Tr(Locale.SleepTimer.Title) + ": " + Tr(Locale.SleepTimer.Off)
+    else
+        m.buttonRow.sleepTimerText = ""
     end if
-    m.videoQueue.sleepTimerMinutes = choices[index]
-    m.buttonRow.sleepTimerOn = choices[index] > 0
 end function
 
 ' Content queued from the Shorts tab carries isShort.
@@ -959,6 +962,7 @@ function ShowChrome(instant = false as boolean) as void
     end if
     ' the Subscribe button shows whether the account already follows this channel
     FetchSubscriptionStatusOnce()
+    UpdateSleepTimerLabel(false)
     wasHidden = (m.chromeMode = ChromeMode.Hidden or m.chromeMode = ChromeMode.FadingOut)
     m.chromeFadeOut.control = "stop"
     m.chrome.visible = true

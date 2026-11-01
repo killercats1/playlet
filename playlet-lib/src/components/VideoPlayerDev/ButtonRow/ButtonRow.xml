@@ -21,6 +21,8 @@
         <field id="likeState" type="integer" value="0" /> <!-- 0 none, 1 liked, 2 disliked -->
         <field id="subscribed" type="boolean" value="false" />
         <field id="sleepTimerOn" type="boolean" value="false" />
+        <!-- shown above the right-hand buttons while a sleep timer runs (or right after pressing the moon) -->
+        <field id="sleepTimerText" type="string" alias="sleepTimerLabel.text" />
         <field id="buttonCount" type="integer" value="0" /> <!-- read-only: set in Init from m.buttons -->
         <!-- pulse the focused button's scale nudge (a press that couldn't move focus: Left/Right clamped at
              the row's ends, Up at the top tier). -->
@@ -35,6 +37,9 @@
             <VideoPlayerButton id="NextButton"
                 iconUri="pkg:/images/icons/player/next.png" />
         </Group>
+        <Label id="sleepTimerLabel" width="600" height="24" translation="[612, 522]" horizAlign="right" color="0xF1F1F1FF">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="18" />
+        </Label>
         <!-- minimize, captions, like, dislike, subscribe, sleep timer, right-aligned to the trackbar's right edge (x=1212). -->
         <Group id="RightCluster">
             <VideoPlayerButton id="MinimizeButton"
