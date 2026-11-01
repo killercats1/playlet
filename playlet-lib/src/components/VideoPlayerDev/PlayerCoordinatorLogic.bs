@@ -54,6 +54,7 @@ namespace PlayerCoordinatorLogic
         Like = 4
         Dislike = 5
         Subscribe = 6
+        SleepTimer = 7
     end enum
 
     ' The two focus targets above/at the trackbar: the bar itself (Left/Right scrub, the cursor grows) and the

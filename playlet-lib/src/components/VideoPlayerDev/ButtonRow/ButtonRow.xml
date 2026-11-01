@@ -20,6 +20,7 @@
         <field id="captionsOn" type="boolean" value="false" /> <!-- selects the CC on vs off icon -->
         <field id="likeState" type="integer" value="0" /> <!-- 0 none, 1 liked, 2 disliked -->
         <field id="subscribed" type="boolean" value="false" />
+        <field id="sleepTimerOn" type="boolean" value="false" />
         <field id="buttonCount" type="integer" value="0" /> <!-- read-only: set in Init from m.buttons -->
         <!-- pulse the focused button's scale nudge (a press that couldn't move focus: Left/Right clamped at
              the row's ends, Up at the top tier). -->
@@ -34,7 +35,7 @@
             <VideoPlayerButton id="NextButton"
                 iconUri="pkg:/images/icons/player/next.png" />
         </Group>
-        <!-- minimize, captions, like, dislike, subscribe, right-aligned to the trackbar's right edge (x=1212). -->
+        <!-- minimize, captions, like, dislike, subscribe, sleep timer, right-aligned to the trackbar's right edge (x=1212). -->
         <Group id="RightCluster">
             <VideoPlayerButton id="MinimizeButton"
                 iconUri="pkg:/images/icons/player/minimize.png" />
@@ -53,6 +54,10 @@
             <VideoPlayerButton id="SubscribeButton"
                 iconUri="pkg:/images/icons/player/subscribed.png"
                 iconUri2="pkg:/images/icons/player/subscribe.png"
+                toggleState="false" />
+            <VideoPlayerButton id="SleepTimerButton"
+                iconUri="pkg:/images/icons/player/sleep-on.png"
+                iconUri2="pkg:/images/icons/player/sleep-off.png"
                 toggleState="false" />
         </Group>
     </children>

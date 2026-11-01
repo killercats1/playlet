@@ -1,0 +1,11 @@
+{
+  inputHash: 'a930e39fe7b229e0b3f88d65e63469fb',
+  outputs: [
+    {
+      outputFilePath: 'images/icons/player/sleep-on.png',
+      outputHash: '6c95e3211b0347087cef497bfdcfcf62',
+      width: 63,
+      height: 63,
+    },
+  ],
+}

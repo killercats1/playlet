@@ -1265,6 +1265,38 @@
         <translation>Up next</translation>
     </message>
     <message>
+        <source>Sleep timer</source>
+        <translation>Sleep timer</translation>
+    </message>
+    <message>
+        <source>Stop playback after:</source>
+        <translation>Stop playback after:</translation>
+    </message>
+    <message>
+        <source>Playback stops in %1 minutes.</source>
+        <translation>Playback stops in %1 minutes.</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Off</translation>
+    </message>
+    <message>
+        <source>15 minutes</source>
+        <translation>15 minutes</translation>
+    </message>
+    <message>
+        <source>30 minutes</source>
+        <translation>30 minutes</translation>
+    </message>
+    <message>
+        <source>1 hour</source>
+        <translation>1 hour</translation>
+    </message>
+    <message>
+        <source>2 hours</source>
+        <translation>2 hours</translation>
+    </message>
+    <message>
         <source>Loading Shorts...</source>
         <translation>Loading Shorts...</translation>
     </message>

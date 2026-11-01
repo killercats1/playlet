@@ -446,6 +446,18 @@ namespace Locale
     end enum
 
     @locale
+    enum SleepTimer
+        Title = "Sleep timer"
+        Prompt = "Stop playback after:"
+        Active = "Playback stops in %1 minutes."
+        Off = "Off"
+        Minutes15 = "15 minutes"
+        Minutes30 = "30 minutes"
+        Hour1 = "1 hour"
+        Hours2 = "2 hours"
+    end enum
+
+    @locale
     enum VideoDetails
         Likes = "%1 likes"
     end enum

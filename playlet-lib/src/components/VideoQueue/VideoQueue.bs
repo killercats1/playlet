@@ -17,6 +17,27 @@ function Init()
     m.content.addField("index", "integer", false)
     m.content.index = m.top.index
     m.shortsJob = invalid
+    m.sleepTimer = m.top.findNode("SleepTimer")
+    m.sleepTimer.ObserveField("fire", FuncName(OnSleepTimerFire))
+end function
+
+' Sleep timer (the player's moon button): it lives here, not in the player, so it keeps counting across videos.
+function OnSleepTimerChange() as void
+    m.sleepTimer.control = "stop"
+    minutes = m.top.sleepTimerMinutes
+    if minutes <= 0
+        m.top.sleepTimerEndsAt = 0
+        return
+    end if
+    m.sleepTimer.duration = minutes * 60
+    m.sleepTimer.control = "start"
+    m.top.sleepTimerEndsAt = CreateObject("roDateTime").AsSeconds() + minutes * 60
+end function
+
+function OnSleepTimerFire() as void
+    LogInfo("Sleep timer: stopping playback")
+    m.top.sleepTimerMinutes = 0
+    m.top.closePlayer = true
 end function
 
 function OnIndexChange()

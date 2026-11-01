@@ -196,6 +196,7 @@ function OnNodeReady()
         m.captionsOverlay.video = m.top
     end if
     m.buttonRow.captionsOn = m.captionsEnabled
+    m.buttonRow.sleepTimerOn = SleepTimerMinutesLeft() > 0
     if m.captionsEnabled
         ApplyCaptionSuppression()
     end if
@@ -600,6 +601,8 @@ function ActivateButton(index as integer) as void
         Rate(2)
     else if index = PlayerCoordinatorLogic.PlayerButton.Subscribe
         ToggleSubscribe()
+    else if index = PlayerCoordinatorLogic.PlayerButton.SleepTimer
+        ShowSleepTimerDialog()
     end if
     SyncFocus()
 end function
@@ -806,6 +809,47 @@ function HandleUpNextKey(key as string, press as boolean) as boolean
     ' play/pause, seeking, ...: close the panel and handle the key as usual
     CloseUpNext(false)
     return OnKeyEvent(key, press)
+end function
+
+' Sleep timer (the moon button): the queue owns the timer, so it keeps counting across videos and closes the
+' player when it runs out.
+function SleepTimerMinutesLeft() as integer
+    endsAt = ValidInt(m.videoQueue.sleepTimerEndsAt)
+    if endsAt <= 0
+        return 0
+    end if
+    left = endsAt - CreateObject("roDateTime").AsSeconds()
+    if left <= 0
+        return 0
+    end if
+    return (left + 59) \ 60
+end function
+
+function ShowSleepTimerDialog() as void
+    minutesLeft = SleepTimerMinutesLeft()
+    message = Tr(Locale.SleepTimer.Prompt)
+    if minutesLeft > 0
+        message = Tr(Locale.SleepTimer.Active).Replace("%1", minutesLeft.ToStr())
+    end if
+    dialog = DialogUtils.ShowDialogEx({
+        title: Tr(Locale.SleepTimer.Title)
+        message: message
+        buttons: [Tr(Locale.SleepTimer.Off), Tr(Locale.SleepTimer.Minutes15), Tr(Locale.SleepTimer.Minutes30), Tr(Locale.SleepTimer.Hour1), Tr(Locale.SleepTimer.Hours2)]
+    })
+    if dialog = invalid
+        return
+    end if
+    dialog.observeField("buttonSelected", FuncName(OnSleepTimerDialogButton), ["buttonSelected"])
+end function
+
+function OnSleepTimerDialogButton(event as object) as void
+    index = event.getData()
+    choices = [0, 15, 30, 60, 120]
+    if not IsInt(index) or index < 0 or index >= choices.Count()
+        return
+    end if
+    m.videoQueue.sleepTimerMinutes = choices[index]
+    m.buttonRow.sleepTimerOn = choices[index] > 0
 end function
 
 ' Content queued from the Shorts tab carries isShort.

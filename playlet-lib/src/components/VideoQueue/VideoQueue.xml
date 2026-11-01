@@ -19,6 +19,10 @@
         <field id="addToQueuePlaylist" type="node" onChange="OnAddToQueuePlaylist" />
         <field id="setQueueAndIndex" type="assocarray" onChange="OnSetQueueAndIndex" />
 
+        <!-- Sleep timer: minutes until playback stops (0 = off); sleepTimerEndsAt is when, in epoch seconds. -->
+        <field id="sleepTimerMinutes" type="integer" value="0" onChange="OnSleepTimerChange" alwaysNotify="true" />
+        <field id="sleepTimerEndsAt" type="integer" value="0" />
+
         <field id="player" type="node" />
         <field id="nowPlaying" type="node" />
 
@@ -39,5 +43,6 @@
     </interface>
     <children>
         <ContentNode id="Content" />
+        <Timer id="SleepTimer" repeat="false" />
     </children>
 </component>

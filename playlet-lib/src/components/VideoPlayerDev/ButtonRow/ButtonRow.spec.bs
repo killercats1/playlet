@@ -30,12 +30,12 @@ namespace Tests
 
         @it("exposes its button count and auto-positions the clusters (centered + right-aligned)")
         function _()
-            m.assertEqual(m.top.buttonCount, 7)
-            ' center: two 42px buttons + a 20px gap (104px) centered on 640 -> x=588; right: five 42px buttons +
-            ' four 20px gaps (290px) right-aligned to 1212 -> x=922. Pins the ClusterWidth math so a drift in
+            m.assertEqual(m.top.buttonCount, 8)
+            ' center: two 42px buttons + a 20px gap (104px) centered on 640 -> x=588; right: six 42px buttons +
+            ' five 20px gaps (352px) right-aligned to 1212 -> x=860. Pins the ClusterWidth math so a drift in
             ' BUTTON_WIDTH/itemSpacings can't silently de-center.
             m.assertEqual(m.top.findNode("CenterCluster").translation[0], 588.0)
-            m.assertEqual(m.top.findNode("RightCluster").translation[0], 922.0)
+            m.assertEqual(m.top.findNode("RightCluster").translation[0], 860.0)
         end function
 
         @describe("virtual-focus highlight")
