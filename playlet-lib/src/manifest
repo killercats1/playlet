@@ -3,7 +3,7 @@ title=PlayletLib
 # Do not update version manually, it is auto updated from package.json
 major_version=2
 minor_version=5
-build_version=00003
+build_version=00004
 
 rsg_version=1.3
 

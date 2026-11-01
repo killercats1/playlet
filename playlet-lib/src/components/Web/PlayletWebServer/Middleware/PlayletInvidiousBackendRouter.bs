@@ -318,10 +318,9 @@ namespace Http
                 options.onBehalfOfUser = activeIdentifyToken
             end if
 
-            ' Playlet's own topic chips on Home (YouTube sends none to the TV app): Music and News are the TV app's
-            ' signed-in topic pages, Gaming and Live are trending feeds.
+            ' Playlet's own topic chips on Home (YouTube sends none to the TV app), see RespondTopic.
             topic = request.query.topic
-            if IsString(topic) and topic <> ""
+            if IsString(topic) and (topic = "music" or topic = "news" or topic = "gaming" or topic = "live")
                 return m.RespondTopic(response, topic, options, ValidString(request.query.continuation))
             end if
 
@@ -369,22 +368,22 @@ namespace Http
             return true
         end function
 
-        ' continuation: the "more" token from the previous page; the trending topics have a single page.
+        ' Topic chips use the signed-in YouTube TV topic page (FEtopics_<topic>, personalized like the TV app's own
+        ' Music/News/Gaming/Live pages). Gaming and Live fall back to YouTube's trending lists only when the account
+        ' has no such page. Continuations only ever come from a topic page (the trending fallback drops its token).
         function RespondTopic(response as object, topic as string, options as object, continuation as string) as boolean
-            if continuation <> "" and topic <> "music" and topic <> "news"
-                response.Json({ "items": [] })
-                return true
-            end if
             feeds = invalid
-            if topic = "music" or topic = "news"
-                if continuation <> ""
-                    options.continuation = continuation
-                end if
-                result = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_" + topic, options)
-                if result.error = invalid
-                    feeds = result.feeds
-                end if
-            else if topic = "gaming" or topic = "live"
+            fromTopicPage = false
+            if continuation <> ""
+                options.continuation = continuation
+            end if
+            result = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_" + topic, options)
+            if result.error = invalid and m.HasItems(result.feeds)
+                feeds = result.feeds
+                fromTopicPage = true
+            end if
+
+            if feeds = invalid and continuation = "" and (topic = "gaming" or topic = "live")
                 trendingType = ""
                 if topic = "gaming"
                     trendingType = "gaming"
@@ -396,9 +395,9 @@ namespace Http
             end if
 
             merged = invalid
-            if IsArray(feeds) and feeds.Count() > 0
+            if m.HasItems(feeds)
                 merged = m.MergeFeeds(feeds)
-                if topic <> "music" and topic <> "news"
+                if not fromTopicPage
                     merged.Delete("continuation")
                 end if
             end if
@@ -414,6 +413,18 @@ namespace Http
             end if
             response.Json(merged)
             return true
+        end function
+
+        function HasItems(feeds as dynamic) as boolean
+            if not IsArray(feeds)
+                return false
+            end if
+            for each feed in feeds
+                if IsAssociativeArray(feed) and IsArray(feed.items) and feed.items.Count() > 0
+                    return true
+                end if
+            end for
+            return false
         end function
 
         ' Subscriptions come back as several shelves (feeds), all of them the account's own subscriptions. Instead of
