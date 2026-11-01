@@ -343,14 +343,27 @@ namespace Http
                 return true
             end if
 
-            response.Json(m.MergeFeeds(result.feeds))
+            ' Only the first shelf: it's the one personalized for the account. The other home shelves are general
+            ' ones (trending, music, topics...) and mixing them in buried the real recommendations.
+            recommended = {}
+            recommended.Append(result.feeds[0])
+            ' keep the topic chips, whichever shelf carried them
+            if not recommended.DoesExist("sortOptions")
+                for each feed in result.feeds
+                    if IsAssociativeArray(feed) and IsArray(feed.sortOptions)
+                        recommended["sortOptions"] = feed.sortOptions
+                        exit for
+                    end if
+                end for
+            end if
+            response.Json(recommended)
 
             return true
         end function
 
-        ' YouTube's home page (and subscriptions) come back as several shelves (feeds). Instead of only the first
-        ' shelf, put all of them in the one row, in order and without duplicates, so it holds everything the
-        ' official app shows. Paging continues the first shelf that has more to load.
+        ' Subscriptions come back as several shelves (feeds), all of them the account's own subscriptions. Instead of
+        ' only the first shelf, put all of them in the one row, in order and without duplicates. Paging continues
+        ' the first shelf that has more to load.
         function MergeFeeds(feeds as object) as object
             maxItems = 150
             merged = {}
