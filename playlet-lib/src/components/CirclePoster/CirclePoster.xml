@@ -6,6 +6,9 @@
         <field id="width" type="integer" alias="Poster.width" onChange="UpdateMaskSize" />
         <field id="height" type="integer" alias="Poster.height" onChange="UpdateMaskSize" />
         <field id="uri" type="uri" alias="Poster.uri" />
+        <field id="loadWidth" type="integer" alias="Poster.loadWidth" />
+        <field id="loadHeight" type="integer" alias="Poster.loadHeight" />
+        <field id="loadDisplayMode" type="string" alias="Poster.loadDisplayMode" />
         <field id="loadingBitmapUri" type="uri" alias="Poster.loadingBitmapUri" />
         <field id="failedBitmapUri" type="uri" alias="Poster.failedBitmapUri" />
         <field id="loadStatus" type="string" alias="Poster.loadStatus" />

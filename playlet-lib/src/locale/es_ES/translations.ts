@@ -1392,9 +1392,5 @@
         <source>Enable Diagnostics</source>
         <translation>Habilitar diagnósticos</translation>
     </message>
-    <message>
-        <source>Help improve Playlet by enabling diagnostics. This will send anonymous diagnotics data to the developer.</source>
-        <translation>Ayuda a mejorar Playlet activando las herramientas de diagnóstico. Esto enviará datos de diagnóstico anónimos al desarrollador.</translation>
-    </message>
 </context>
 </TS>

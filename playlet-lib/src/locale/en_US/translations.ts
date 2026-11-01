@@ -1397,8 +1397,8 @@
         <translation>Enable Diagnostics</translation>
     </message>
     <message>
-        <source>Help improve Playlet by enabling diagnostics. This will send anonymous diagnotics data to the developer.</source>
-        <translation>Help improve Playlet by enabling diagnostics. This will send anonymous diagnotics data to the developer.</translation>
+        <source>Save diagnostics (errors and crash reports) to a log file on this TV. Nothing is sent anywhere.</source>
+        <translation>Save diagnostics (errors and crash reports) to a log file on this TV. Nothing is sent anywhere.</translation>
     </message>
     <message>
         <source>Select keyboard language</source>
