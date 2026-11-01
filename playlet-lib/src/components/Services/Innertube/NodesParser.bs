@@ -1287,6 +1287,7 @@ namespace Innertube
             "authorId": authorId
             "lines": lines
             "videoThumbnails": videoThumbnails
+            "isShort": true
         }
 
         PushFeedItem(video, context)
@@ -1378,6 +1379,7 @@ namespace Innertube
             "title": ObjectUtils.Dig(nodeData, ["overlayMetadata", "primaryText", "content"])
             "viewCountText": ObjectUtils.Dig(nodeData, ["overlayMetadata", "secondaryText", "content"])
             "videoThumbnails": videoThumbnails
+            "isShort": true
         }
 
         PushFeedItem(video, context)
@@ -1627,6 +1629,7 @@ namespace Innertube
             "videoId": videoId
             "title": title
             "videoThumbnails": videoThumbnails
+            "isShort": true
         }
 
         authorId = ParseTileRendererAuthorId(nodeData)

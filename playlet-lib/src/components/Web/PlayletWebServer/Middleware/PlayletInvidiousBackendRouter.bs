@@ -427,6 +427,58 @@ namespace Http
             return itemType + ":" + id
         end function
 
+        ' The account's Shorts (the Shorts tab): the Shorts YouTube puts in its home page and subscriptions feed.
+        ' The Shorts tab is opt-in, so this ignores the "Disable Shorts" setting.
+        @get("/playlet-invidious-backend/api/v1/auth/shorts")
+        function GetAuthShorts(context as object) as boolean
+            request = context.request
+            response = context.response
+
+            accessToken = m.RequireAccessToken(request, response)
+            if accessToken = invalid
+                return true
+            end if
+
+            onBehalfOfUser = request.query.activeIdentifyToken
+            items = []
+            seen = {}
+            for each source in ["home", "subscriptions"]
+                options = {
+                    "accessToken": accessToken
+                    "disableShorts": false
+                }
+                if not StringUtils.IsNullOrEmpty(onBehalfOfUser)
+                    options.onBehalfOfUser = onBehalfOfUser
+                end if
+                if source = "home"
+                    result = InnertubeService.GetHome(options)
+                else
+                    result = InnertubeService.GetSubscriptions(options)
+                end if
+                if IsArray(result.feeds)
+                    for each feed in result.feeds
+                        if IsAssociativeArray(feed) and IsArray(feed.items)
+                            for each item in feed.items
+                                if IsAssociativeArray(item) and item.isShort = true and IsString(item.videoId) and not seen.DoesExist(item.videoId)
+                                    seen[item.videoId] = true
+                                    items.Push(item)
+                                end if
+                            end for
+                        end if
+                    end for
+                end if
+            end for
+
+            if items.Count() = 0
+                response.Json({ "error": "No Shorts found" })
+                response.http_code = 500
+                return true
+            end if
+
+            response.Json({ "items": items })
+            return true
+        end function
+
         ' The account's YouTube Music recommendations (the Music tab's first row).
         @get("/playlet-invidious-backend/api/v1/auth/music_recommended")
         function GetAuthMusicRecommended(context as object) as boolean

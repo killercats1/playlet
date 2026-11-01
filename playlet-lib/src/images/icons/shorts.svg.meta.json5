@@ -1,0 +1,11 @@
+{
+  inputHash: 'ad30ef343acdd2eaa25978fac877cff4',
+  outputs: [
+    {
+      outputFilePath: 'images/icons/shorts.png',
+      outputHash: '7cb89eb16410f5713226a9707ea5f1f5',
+      width: 48,
+      height: 48,
+    },
+  ],
+}

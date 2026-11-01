@@ -364,6 +364,12 @@ function OnKeyEvent(key as string, press as boolean) as boolean
         return true
     end if
 
+    ' Shorts: with the controls hidden, Down flips to the next Short and Up to the previous one (like swiping).
+    if press and (key = RemoteKeys.Up or key = RemoteKeys.Down) and IsPlayingShort() and not CanFocusInteract() and m.transport.transportMode = TransportController.Mode.Idle
+        FlipShort(key = RemoteKeys.Down)
+        return true
+    end if
+
     ' Focus model (only while the chrome is up + idle): the BUTTON tier takes the directional + select keys; the
     ' BAR tier takes Up (back to the buttons) and lets the transport keys through. Rev/Fwd/Replay are not owned
     ' by the buttons, so they fall through to the transport and move focus to the bar.
@@ -785,6 +791,20 @@ function HandleUpNextKey(key as string, press as boolean) as boolean
     ' play/pause, seeking, ...: close the panel and handle the key as usual
     CloseUpNext(false)
     return OnKeyEvent(key, press)
+end function
+
+' Content queued from the Shorts tab carries isShort.
+function IsPlayingShort() as boolean
+    content = m.top.content
+    return content <> invalid and content.hasField("isShort") and content.isShort = true
+end function
+
+function FlipShort(forward as boolean) as void
+    if forward
+        VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences, true)
+    else if m.videoQueue.hasPrevious
+        m.videoQueue.previous = true
+    end if
 end function
 
 ' The Next button: the next video in the queue, or else the first recommended one (even with autoplay off).

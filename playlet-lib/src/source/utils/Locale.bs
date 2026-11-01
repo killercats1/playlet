@@ -432,6 +432,13 @@ namespace Locale
     end enum
 
     @locale
+    enum Shorts
+        Loading = "Loading Shorts..."
+        SignIn = "Sign in with your YouTube account (Profile tab) to see your Shorts."
+        NoShorts = "No Shorts to show right now."
+    end enum
+
+    @locale
     enum Player
         UpNext = "Up next"
     end enum

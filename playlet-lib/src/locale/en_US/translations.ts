@@ -1257,6 +1257,18 @@
         <translation>Up next</translation>
     </message>
     <message>
+        <source>Loading Shorts...</source>
+        <translation>Loading Shorts...</translation>
+    </message>
+    <message>
+        <source>Sign in with your YouTube account (Profile tab) to see your Shorts.</source>
+        <translation>Sign in with your YouTube account (Profile tab) to see your Shorts.</translation>
+    </message>
+    <message>
+        <source>No Shorts to show right now.</source>
+        <translation>No Shorts to show right now.</translation>
+    </message>
+    <message>
         <source>Thumbnail previews</source>
         <translation>Thumbnail previews</translation>
     </message>
