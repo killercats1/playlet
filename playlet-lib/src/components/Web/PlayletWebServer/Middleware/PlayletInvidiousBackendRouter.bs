@@ -335,9 +335,71 @@ namespace Http
                 return true
             end if
 
-            response.Json(result.feeds[0])
+            response.Json(m.MergeHomeFeeds(result.feeds))
 
             return true
+        end function
+
+        ' YouTube's home page comes back as several shelves (feeds). Instead of only the first shelf, put all of
+        ' them in the Recommended row, in order and without duplicates, so it holds everything the official
+        ' app's home shows. Paging continues the first shelf that has more to load.
+        function MergeHomeFeeds(feeds as object) as object
+            maxItems = 150
+            merged = {}
+            merged.Append(feeds[0])
+            items = []
+            seen = {}
+            continuation = ""
+
+            for each feed in feeds
+                if not IsAssociativeArray(feed)
+                    continue for
+                end if
+                if continuation = "" and IsString(feed.continuation)
+                    continuation = feed.continuation
+                end if
+                if not IsArray(feed.items)
+                    continue for
+                end if
+                for each item in feed.items
+                    if items.Count() >= maxItems
+                        exit for
+                    end if
+                    key = m.HomeFeedItemKey(item)
+                    if key <> ""
+                        if seen.DoesExist(key)
+                            continue for
+                        end if
+                        seen[key] = true
+                    end if
+                    items.Push(item)
+                end for
+            end for
+
+            merged["items"] = items
+            if continuation <> ""
+                merged["continuation"] = continuation
+            end if
+            return merged
+        end function
+
+        function HomeFeedItemKey(item as object) as string
+            if not IsAssociativeArray(item)
+                return ""
+            end if
+            itemType = ValidString(item["type"])
+            id = ""
+            if itemType = "video"
+                id = ValidString(item["videoId"])
+            else if itemType = "playlist"
+                id = ValidString(item["playlistId"])
+            else if itemType = "channel"
+                id = ValidString(item["authorId"])
+            end if
+            if id = ""
+                return ""
+            end if
+            return itemType + ":" + id
         end function
 
         @get("/playlet-invidious-backend/api/v1/search/suggestions")
