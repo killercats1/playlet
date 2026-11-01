@@ -64,13 +64,13 @@ namespace InnertubeShorts
             end if
             payload = { "context": Innertube.CreateContext(Innertube.ClientType.Web, CreateObject("roDeviceInfo"), options) }
             payload.Append(body)
-            request = HttpClient.Post(`https://www.youtube.com/youtubei/v1/${path}?prettyPrint=false&alt=json`).JsonBody(payload)
-            request.Headers(Innertube.CreateHeaders(Innertube.ClientType.Web))
+            httpRequest = HttpClient.Post(`https://www.youtube.com/youtubei/v1/${path}?prettyPrint=false&alt=json`).JsonBody(payload)
+            httpRequest.Headers(Innertube.CreateHeaders(Innertube.ClientType.Web))
             if signedIn
-                request.Header("Authorization", "Bearer " + accessToken)
+                httpRequest.Header("Authorization", "Bearer " + accessToken)
             end if
-            request.Cancellation(cancellation)
-            response = request.Await()
+            httpRequest.Cancellation(cancellation)
+            response = httpRequest.Await()
             if response.IsSuccess()
                 json = response.Json()
                 if IsAssociativeArray(json)

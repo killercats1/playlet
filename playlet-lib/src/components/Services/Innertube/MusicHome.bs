@@ -159,16 +159,16 @@ namespace InnertubeMusic
 
     ' The thumbnail comes from i.ytimg.com by videoId (the tiles are 16:9).
     function Video(videoId as string, title as string, author as string, authorId as string) as object
-        video = {
+        item = {
             "type": "video"
             "videoId": videoId
             "title": title
             "author": author
         }
         if authorId <> ""
-            video["authorId"] = authorId
+            item["authorId"] = authorId
         end if
-        return video
+        return item
     end function
 
     function ChannelIdFromRuns(runs as dynamic) as string
@@ -207,13 +207,13 @@ namespace InnertubeMusic
             return data["simpleText"]
         end if
         if IsArray(data["runs"])
-            text = ""
+            joined = ""
             for each textRun in data["runs"]
                 if IsAssociativeArray(textRun) and IsString(textRun["text"])
-                    text += textRun["text"]
+                    joined += textRun["text"]
                 end if
             end for
-            return text
+            return joined
         end if
         return ""
     end function
