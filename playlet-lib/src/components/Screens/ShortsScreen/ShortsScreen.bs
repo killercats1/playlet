@@ -189,6 +189,9 @@ function PlayFrom(index as integer) as void
         end if
         nodes.Push(node)
     end for
+    ' endless Shorts: the queue continues YouTube's Shorts sequence from the last one
+    lastNode = nodes[nodes.Count() - 1]
+    lastNode.addFields({ shortsMore: "v:" + lastNode.videoId })
     m.top.videoQueue.setQueueAndIndex = { videoNodes: nodes, index: index }
     m.top.videoQueue.play = true
 end function

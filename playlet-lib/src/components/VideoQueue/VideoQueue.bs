@@ -1,5 +1,8 @@
 #const USE_DEV_PLAYER = true
 
+import "pkg:/components/JobSystem/Jobs.bs"
+import "pkg:/components/JobSystem/JobSystem.bs"
+import "pkg:/components/Services/Invidious/InvidiousToContentNode.bs"
 import "pkg:/components/Services/LoungeService/LoungeMessages.bs"
 import "pkg:/components/VideoFeed/FeedLoadState.bs"
 import "pkg:/components/VideoQueue/Notifications/VideoQueueNotificationUtils.bs"
@@ -13,6 +16,7 @@ function Init()
     m.top.content = m.content
     m.content.addField("index", "integer", false)
     m.content.index = m.top.index
+    m.shortsJob = invalid
 end function
 
 function OnIndexChange()
@@ -23,6 +27,64 @@ function OnIndexChange()
         node.queueIndex = index
     end for
     UpdateHasPreviousNext()
+    MaybeLoadMoreShorts()
+end function
+
+' Endless Shorts: while a Short from the Shorts tab plays within 3 of the end of the queue, load the next batch.
+' The last Short holds where to continue from ("shortsMore": "v:<videoId>" or "c:<token>"); it is cleared
+' when used so the same batch isn't loaded twice, and the new last Short gets the next one.
+function MaybeLoadMoreShorts() as void
+    if m.shortsJob <> invalid
+        return
+    end if
+    count = m.content.getChildCount()
+    current = m.content.getChild(m.top.index)
+    if current = invalid or not current.hasField("isShort") or current.isShort <> true
+        return
+    end if
+    if count - 1 - m.top.index > 3
+        return
+    end if
+    last = m.content.getChild(count - 1)
+    if last = invalid or not last.hasField("shortsMore") or not IsString(last.shortsMore) or last.shortsMore = ""
+        return
+    end if
+    more = last.shortsMore
+    last.shortsMore = ""
+
+    m.shortsJob = JobSystem.CreateCallback(OnShortsJobDone)
+    JobSystem.QueueJob(m.top.jobQueue, Jobs.ShortsSequenceJob, { more: more, invidious: m.top.invidious }, m.shortsJob)
+end function
+
+function OnShortsJobDone(event as object) as void
+    JobSystem.UnobserveCallback(event.getRoSGNode())
+    m.shortsJob = invalid
+    info = event.getInfo()
+    if not info.success
+        LogWarnNoTelemetry("No more Shorts:", info.error)
+        return
+    end if
+
+    instance = m.top.invidious@.GetInstance()
+    nodes = []
+    for each item in ValidArray(info.data.items)
+        if IsAssociativeArray(item) and IsString(item.videoId) and m.content.findNode(item.videoId) = invalid
+            node = InvidiousContent.ToVideoContentNode(invalid, item, instance)
+            node.addFields({ isShort: true })
+            nodes.Push(node)
+        end if
+    end for
+    if nodes.Count() = 0
+        return
+    end if
+    continuation = ValidString(info.data.continuation)
+    if continuation <> ""
+        nodes[nodes.Count() - 1].addFields({ shortsMore: "c:" + continuation })
+    end if
+    m.content.appendChildren(nodes)
+    UpdateHasPreviousNext()
+    ' a short batch may leave the playing Short close to the end again
+    MaybeLoadMoreShorts()
 end function
 
 function OnPlay() as void

@@ -662,10 +662,25 @@ function OnLikeJobDone(event as object) as void
     end if
 end function
 
+' The channel of the playing video: from the row it was picked in, or the loaded video info.
+function CurrentChannelId() as string
+    content = m.top.content
+    if content = invalid
+        return ""
+    end if
+    if not StringUtils.IsNullOrEmpty(content.authorId)
+        return content.authorId
+    end if
+    if content.hasField("metadata") and IsAssociativeArray(content.metadata)
+        return ValidString(content.metadata.authorId)
+    end if
+    return ""
+end function
+
 function ToggleSubscribe() as void
     profile = CurrentProfile()
-    content = m.top.content
-    if profile = invalid or content = invalid or StringUtils.IsNullOrEmpty(content.authorId)
+    channelId = CurrentChannelId()
+    if profile = invalid or channelId = ""
         m.buttonRow.nudge = true
         return
     end if
@@ -676,7 +691,7 @@ function ToggleSubscribe() as void
     JobSystem.QueueJob(m.jobQueue, Jobs.SubscribeJob, {
         channelView: m.top
         invidious: m.invidious
-        ucid: content.authorId
+        ucid: channelId
         subscribe: not m.top.isSubscribed
         profile: profile
     }, m.subscribeJob)
@@ -688,14 +703,14 @@ function FetchSubscriptionStatusOnce() as void
         return
     end if
     profile = CurrentProfile()
-    content = m.top.content
-    if profile = invalid or content = invalid or StringUtils.IsNullOrEmpty(content.authorId)
+    channelId = CurrentChannelId()
+    if profile = invalid or channelId = ""
         return
     end if
     m.subscriptionStatusFetched = true
     JobSystem.QueueJob(m.jobQueue, Jobs.FetchSubscriptionStatusJob, {
         channelView: m.top
-        ucid: content.authorId
+        ucid: channelId
         profile: profile
         invidious: m.invidious
     }, JobSystem.CreateCallback())
@@ -1401,6 +1416,13 @@ function PlayWithContent(contentNode as object)
     metadata = contentNode.metadata
     if IsAssociativeArray(metadata)
         videoContentNode.AddFields({ metadata: metadata })
+    end if
+    ' Shorts flip with Up/Down; Subscribe needs the channel
+    if contentNode.hasField("isShort") and contentNode.isShort = true
+        videoContentNode.AddFields({ isShort: true })
+    end if
+    if not StringUtils.IsNullOrEmpty(contentNode.authorId)
+        videoContentNode.AddFields({ authorId: contentNode.authorId })
     end if
 
     StartVideoContentJob(videoContentNode)
