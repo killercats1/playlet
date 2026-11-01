@@ -218,49 +218,6 @@ export class PlayletApi {
         return { filename, content };
     }
 
-    static playletLibUrlsForTag(tag: string) {
-        const urls = [{
-            link: `https://github.com/iBicha/playlet/releases/download/${tag}/playlet-lib.squashfs.pkg`,
-            type: 'custom'
-        }, {
-            link: `https://github.com/iBicha/playlet/releases/download/${tag}/playlet-lib.zip`,
-            type: 'custom'
-        }]
-        // When an official release is out, it replaces the current canary release.
-        // To avoid the "not found" error, we fallback to the default "latest" release.
-        if (tag === "canary") {
-            urls.push({
-                link: `https://github.com/iBicha/playlet/releases/latest/download/playlet-lib.squashfs.pkg`,
-                type: 'custom'
-            }, {
-                link: `https://github.com/iBicha/playlet/releases/latest/download/playlet-lib.zip`,
-                type: 'custom'
-            })
-        }
-        return urls;
-    }
-
-    static async showSetPlayletLibUrlsCode() {
-        const response = await PlayletApi.send("POST", `${PlayletApi.host()}/api/playlet-lib-urls/code`);
-        if (!response.ok) {
-            throw new Error(`Error from /api/playlet-lib-urls/code: ${response.status} ${await response.text()}`);
-        }
-    }
-
-    static async setPlayletLibUrls(urls: { link: string, type: string }[], code: string) {
-        const response = await PlayletApi.send("POST", `${PlayletApi.host()}/api/playlet-lib-urls?code=${encodeURIComponent(code)}`, urls);
-        if (!response.ok) {
-            throw new Error(`Error from /api/playlet-lib-urls: ${response.status} ${await response.text()}`);
-        }
-    }
-
-    static async resetPlayletLibUrls() {
-        const response = await PlayletApi.send("DELETE", `${PlayletApi.host()}/api/playlet-lib-urls`);
-        if (!response.ok) {
-            throw new Error(`Error from /api/playlet-lib-urls: ${response.status} ${await response.text()}`);
-        }
-    }
-
     static send(method: "POST" | "PUT" | "DELETE", url: string, payload?: unknown) {
         const headers: Record<string, string> = { [CsrfHeader]: "1" };
         if (payload === undefined) {

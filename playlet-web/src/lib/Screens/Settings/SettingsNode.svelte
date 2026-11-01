@@ -2,7 +2,6 @@
   import BooleanControl from "lib/Screens/Settings/SettingControls/BooleanControl.svelte";
   import ClearSearchHistoryControl from "lib/Screens/Settings/SettingControls/ClearSearchHistoryControl.svelte";
   import EditHomeScreenControl from "lib/Screens/Settings/SettingControls/EditHomeScreenControl.svelte";
-  import PlayletLibVersionControl from "lib/Screens/Settings/SettingControls/PlayletLibVersionControl.svelte";
   import RadioControl from "lib/Screens/Settings/SettingControls/RadioControl.svelte";
   import StringControl from "lib/Screens/Settings/SettingControls/StringControl.svelte";
   import NumberControl from "./SettingControls/NumberControl.svelte";
@@ -39,7 +38,6 @@
     ClearPoTokensControl,
     MintPoTokenControl,
     EditHomeScreenControl,
-    PlayletLibVersionControl,
     EditQualityControl,
     SponsorBlockCategoriesControl,
   };

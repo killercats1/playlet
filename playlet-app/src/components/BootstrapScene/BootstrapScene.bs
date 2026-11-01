@@ -33,14 +33,10 @@ function GetPlayletLibUrls() as object
             return [debug]
         #end if
     #else
-        savedUrls = Registry.GetPlayletLibUrlsFromRegistry()
-        if savedUrls <> invalid
-            m.shouldClearRegistryOnLoadFail = true
-            return savedUrls
-        end if
-
-        ' This fork always runs the lib bundled in the package, so its own changes are what runs,
-        ' instead of downloading the latest upstream release from GitHub.
+        ' This fork only ever runs the lib bundled in the package: it never downloads the upstream
+        ' release from GitHub, and never loads a lib from a URL saved in the registry (clearing any
+        ' left there by another build).
+        Registry.DeleteKey("playlet_lib_urls", "Playlet")
         embedded = { type: "embedded-zip", link: Manifest.ReadValue("playlet_lib_zip_embedded_url") }
         return [embedded]
     #end if

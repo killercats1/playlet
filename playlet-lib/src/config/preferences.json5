@@ -299,13 +299,6 @@
     description: "Developer preferences",
     children: [
       {
-        displayText: "Playlet Library version",
-        key: "dev.playlet_lib_version",
-        description: "The version of Playlet Lib to use. These correspond to tagged releases on Github. Releases that do not have a playlet-lib.zip file are disabled.",
-        visibility: "web",
-        svelteComponent: "PlayletLibVersionControl",
-      },
-      {
         displayText: "Clear cache",
         key: "dev.clear_cache",
         description: "Clear cache from cachefs: and tmp:",
