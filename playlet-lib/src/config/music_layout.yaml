@@ -1,4 +1,13 @@
-# Rows of the Music tab in the side bar, from YouTube's own Music channel.
+# Rows of the Music tab in the side bar: the account's YouTube Music recommendations (when signed in with
+# YouTube, and if YouTube Music accepts the sign-in), then YouTube's own Music channel.
+- title: Recommended music
+  id: recommended_music
+  feedSources:
+    - id: music_recommended
+      title: Recommended music
+      apiType: Invidious
+      endpoint: auth_music_recommended
+
 - title: Trending - Music
   id: trending_music
   feedSources:

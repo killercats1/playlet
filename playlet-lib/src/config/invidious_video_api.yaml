@@ -196,6 +196,12 @@ watch_history:
   paginationType: Pages
   responseHandler: WatchHistoryHandler
 
+# Implemented only by Playlet backend: the YouTube account's YouTube Music recommendations.
+auth_music_recommended:
+  title: Recommended music
+  url: /api/v1/auth/music_recommended
+  authenticated: true
+
 # Recommended is not a thing for Invidious, but we can use
 # /api/v1/popular?recommended=true and handle it in Playlet
 # backend. Invidious will just ignore the query param.

@@ -33,6 +33,10 @@
         <translation>Music playlists</translation>
     </message>
     <message>
+        <source>Recommended music</source>
+        <translation>Recommended music</translation>
+    </message>
+    <message>
         <source>Bookmarks</source>
         <translation>Bookmarks</translation>
     </message>

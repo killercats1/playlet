@@ -1,4 +1,5 @@
 import "pkg:/components/Services/Innertube/InnertubeService.bs"
+import "pkg:/components/Services/Innertube/MusicHome.bs"
 import "pkg:/components/Web/WebServer/Http/HttpRouter.bs"
 
 namespace Http
@@ -424,6 +425,28 @@ namespace Http
                 return ""
             end if
             return itemType + ":" + id
+        end function
+
+        ' The account's YouTube Music recommendations (the Music tab's first row).
+        @get("/playlet-invidious-backend/api/v1/auth/music_recommended")
+        function GetAuthMusicRecommended(context as object) as boolean
+            request = context.request
+            response = context.response
+
+            accessToken = m.RequireAccessToken(request, response)
+            if accessToken = invalid
+                return true
+            end if
+
+            result = InnertubeMusic.GetHome(accessToken, request.query.activeIdentifyToken, invalid)
+            if result.error <> invalid
+                response.Json({ "error": `YouTube Music recommendations unavailable: ${result.error}` })
+                response.http_code = 500
+                return true
+            end if
+
+            response.Json({ "items": result.items })
+            return true
         end function
 
         @get("/playlet-invidious-backend/api/v1/search/suggestions")

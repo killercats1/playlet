@@ -235,6 +235,8 @@ function RemoveSingleFailedRow(error as dynamic, feedSource as object, feedSourc
     isError = isError or error.instr("API disabled") <> -1
     ' Playlet not supporting popular
     isError = isError or feedSource.id = "inv_popular"
+    ' YouTube Music may refuse the sign-in, or an Invidious profile has no such endpoint: just drop the row
+    isError = isError or feedSource.id = "music_recommended"
     if not isError
         return false
     end if
