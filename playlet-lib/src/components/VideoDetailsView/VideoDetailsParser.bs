@@ -1,0 +1,157 @@
+import "pkg:/source/utils/ObjectUtils.bs"
+import "pkg:/source/utils/StringUtils.bs"
+import "pkg:/source/utils/Types.bs"
+
+' Pulls the details shown on the video details page out of a video's info, as display text:
+' { title, author, authorId, viewsText, dateText, likesText, subscribersText, description }.
+' Anything missing is left empty, so the page just doesn't show that line.
+namespace VideoDetailsParser
+
+    ' YouTube's /next (watch page) response, used by the built-in backend.
+    function FromWatchNext(payload as object) as object
+        details = VideoDetailsParser.Empty()
+        contents = ObjectUtils.Dig(payload, ["contents", "twoColumnWatchNextResults", "results", "results", "contents"])
+        if not IsArray(contents)
+            return details
+        end if
+
+        for each item in contents
+            if not IsAssociativeArray(item)
+                continue for
+            end if
+
+            primary = item["videoPrimaryInfoRenderer"]
+            if IsAssociativeArray(primary)
+                details.title = VideoDetailsParser.Text(primary["title"])
+                details.viewsText = VideoDetailsParser.Text(ObjectUtils.Dig(primary, ["viewCount", "videoViewCountRenderer", "viewCount"]))
+                details.dateText = VideoDetailsParser.Text(primary["dateText"])
+                if details.dateText = ""
+                    details.dateText = VideoDetailsParser.Text(primary["relativeDateText"])
+                end if
+                likeButton = VideoDetailsParser.FindKey(primary["videoActions"], "likeButtonViewModel", 12)
+                buttonViewModel = VideoDetailsParser.FindKey(likeButton, "buttonViewModel", 12)
+                if IsAssociativeArray(buttonViewModel)
+                    likes = ValidString(buttonViewModel["title"])
+                    ' a bare "Like" means the count is hidden
+                    if likes.Len() < 12 and CreateObject("roRegex", "[0-9]", "").IsMatch(likes)
+                        details.likesText = likes
+                    end if
+                end if
+            end if
+
+            secondary = item["videoSecondaryInfoRenderer"]
+            if IsAssociativeArray(secondary)
+                owner = ObjectUtils.Dig(secondary, ["owner", "videoOwnerRenderer"])
+                if IsAssociativeArray(owner)
+                    details.author = VideoDetailsParser.Text(owner["title"])
+                    details.authorId = ValidString(ObjectUtils.Dig(owner, ["navigationEndpoint", "browseEndpoint", "browseId"]))
+                    details.subscribersText = VideoDetailsParser.Text(owner["subscriberCountText"])
+                end if
+                details.description = ValidString(ObjectUtils.Dig(secondary, ["attributedDescription", "content"]))
+                if details.description = ""
+                    details.description = VideoDetailsParser.Text(secondary["description"])
+                end if
+            end if
+        end for
+
+        return details
+    end function
+
+    ' An Invidious /api/v1/videos/:id response, used with an Invidious instance.
+    function FromInvidious(video as object) as object
+        details = VideoDetailsParser.Empty()
+        if not IsAssociativeArray(video)
+            return details
+        end if
+        details.title = ValidString(video.title)
+        details.author = ValidString(video.author)
+        details.authorId = ValidString(video.authorId)
+        details.subscribersText = ValidString(video.subCountText)
+        details.dateText = ValidString(video.publishedText)
+        details.description = ValidString(video.description)
+        if IsNumber(video.viewCount)
+            details.viewsText = `${VideoDetailsParser.FormatCount(video.viewCount)} views`
+        end if
+        if IsNumber(video.likeCount) and video.likeCount > 0
+            details.likesText = VideoDetailsParser.FormatCount(video.likeCount)
+        end if
+        return details
+    end function
+
+    function Empty() as object
+        return {
+            title: ""
+            author: ""
+            authorId: ""
+            viewsText: ""
+            dateText: ""
+            likesText: ""
+            subscribersText: ""
+            description: ""
+        }
+    end function
+
+    ' simpleText / runs / attributed "content" text -> string
+    function Text(data as dynamic) as string
+        if IsString(data)
+            return data
+        end if
+        if not IsAssociativeArray(data)
+            return ""
+        end if
+        if IsString(data["simpleText"])
+            return data["simpleText"]
+        end if
+        if IsString(data["content"])
+            return data["content"]
+        end if
+        if IsArray(data["runs"])
+            text = ""
+            for each textRun in data["runs"]
+                if IsAssociativeArray(textRun) and IsString(textRun["text"])
+                    text += textRun["text"]
+                end if
+            end for
+            return text
+        end if
+        return ""
+    end function
+
+    ' The first value under `key`, searching nested objects/arrays up to `depth` levels down.
+    function FindKey(data as dynamic, key as string, depth as integer) as dynamic
+        if depth < 0
+            return invalid
+        end if
+        if IsAssociativeArray(data)
+            if data.DoesExist(key)
+                return data[key]
+            end if
+            for each childKey in data
+                found = VideoDetailsParser.FindKey(data[childKey], key, depth - 1)
+                if found <> invalid
+                    return found
+                end if
+            end for
+        else if IsArray(data)
+            for each child in data
+                found = VideoDetailsParser.FindKey(child, key, depth - 1)
+                if found <> invalid
+                    return found
+                end if
+            end for
+        end if
+        return invalid
+    end function
+
+    ' 1234567 -> "1,234,567"
+    function FormatCount(value as dynamic) as string
+        digits = value.ToStr()
+        result = ""
+        while digits.Len() > 3
+            result = "," + digits.Right(3) + result
+            digits = digits.Left(digits.Len() - 3)
+        end while
+        return digits + result
+    end function
+
+end namespace

@@ -19,6 +19,7 @@
         <function name="OpenPlaylist" />
         <function name="OpenChannel" />
         <function name="OpenVideoChannel" />
+        <function name="OpenVideoDetails" />
         <function name="OpenPlaylistChannel" />
         <function name="Refresh" />
     </interface>

@@ -1,0 +1,11 @@
+namespace VideoDetailsUtils
+    function Open(video as object, appController = invalid as object)
+        view = CreateObject("roSGNode", "VideoDetailsView")
+        if appController = invalid
+            appController = m.appController
+        end if
+        appController@.PushScreen(view)
+        view@.BindNode()
+        view.content = video
+    end function
+end namespace

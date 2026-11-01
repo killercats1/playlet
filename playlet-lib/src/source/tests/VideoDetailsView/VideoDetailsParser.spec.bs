@@ -1,0 +1,104 @@
+import "pkg:/components/VideoDetailsView/VideoDetailsParser.bs"
+
+namespace Tests
+
+    @suite
+    class VideoDetailsParserTests extends Rooibos.BaseTestSuite
+
+        @describe("VideoDetailsParser.FromWatchNext")
+
+        @it("reads title, views, date, likes, channel, subscribers and description")
+        function _()
+            payload = {
+                contents: {
+                    twoColumnWatchNextResults: {
+                        results: {
+                            results: {
+                                contents: [
+                                    {
+                                        videoPrimaryInfoRenderer: {
+                                            title: { runs: [{ text: "My " }, { text: "video" }] }
+                                            viewCount: { videoViewCountRenderer: { viewCount: { simpleText: "1,234 views" } } }
+                                            dateText: { simpleText: "Oct 3, 2024" }
+                                            videoActions: {
+                                                menuRenderer: {
+                                                    topLevelButtons: [
+                                                        { segmentedLikeDislikeButtonViewModel: { likeButtonViewModel: { likeButtonViewModel: { toggleButtonViewModel: { toggleButtonViewModel: { defaultButtonViewModel: { buttonViewModel: { title: "56K" } } } } } } } }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                    {
+                                        videoSecondaryInfoRenderer: {
+                                            owner: {
+                                                videoOwnerRenderer: {
+                                                    title: { runs: [{ text: "Some Channel" }] }
+                                                    subscriberCountText: { simpleText: "2M subscribers" }
+                                                    navigationEndpoint: { browseEndpoint: { browseId: "UC123" } }
+                                                }
+                                            }
+                                            attributedDescription: { content: "Line one" + Chr(10) + "Line two" }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+            details = VideoDetailsParser.FromWatchNext(payload)
+            m.assertEqual(details.title, "My video")
+            m.assertEqual(details.viewsText, "1,234 views")
+            m.assertEqual(details.dateText, "Oct 3, 2024")
+            m.assertEqual(details.likesText, "56K")
+            m.assertEqual(details.author, "Some Channel")
+            m.assertEqual(details.authorId, "UC123")
+            m.assertEqual(details.subscribersText, "2M subscribers")
+            m.assertEqual(details.description, "Line one" + Chr(10) + "Line two")
+        end function
+
+        @it("leaves likes empty when the count is hidden, and everything empty for an unexpected payload")
+        function _()
+            payload = {
+                contents: {
+                    twoColumnWatchNextResults: {
+                        results: {
+                            results: {
+                                contents: [
+                                    { videoPrimaryInfoRenderer: { videoActions: { likeButtonViewModel: { buttonViewModel: { title: "Like" } } } } }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+            m.assertEqual(VideoDetailsParser.FromWatchNext(payload).likesText, "")
+            empty = VideoDetailsParser.FromWatchNext({ unexpected: true })
+            m.assertEqual(empty.title, "")
+            m.assertEqual(empty.description, "")
+        end function
+
+        @describe("VideoDetailsParser.FromInvidious")
+
+        @it("formats counts and copies the text fields")
+        function _()
+            details = VideoDetailsParser.FromInvidious({
+                title: "T"
+                author: "A"
+                authorId: "UC9"
+                subCountText: "10K"
+                publishedText: "2 days ago"
+                description: "D"
+                viewCount: 1234567
+                likeCount: 0
+            })
+            m.assertEqual(details.viewsText, "1,234,567 views")
+            m.assertEqual(details.likesText, "")
+            m.assertEqual(details.authorId, "UC9")
+            m.assertEqual(details.dateText, "2 days ago")
+        end function
+
+    end class
+
+end namespace

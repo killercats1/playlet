@@ -1,0 +1,47 @@
+import "pkg:/components/Services/Innertube/NextEndpoint.bs"
+import "pkg:/components/Services/Invidious/InvidiousService.bs"
+import "pkg:/components/VideoDetailsView/VideoDetailsParser.bs"
+
+' Loads what the video details page shows (description, views, date, likes, channel). Uses YouTube's watch page
+' data directly with the built-in backend, or the Invidious instance's video info when Invidious is selected.
+@job("VideoDetailsJob")
+function ExecuteJob() as void
+    input = JobGetInput()
+    videoId = ValidString(input.videoId)
+    if videoId = ""
+        JobError("Can't load video details: videoId is missing")
+        return
+    end if
+
+    cancellation = JobGetCancellation()
+    preferences = input.preferences
+
+    if preferences <> invalid and preferences["backend.selected"] = "invidious"
+        service = new Invidious.InvidiousService(input.invidious)
+        video = service.GetVideoMetadata(videoId, { cancellation: cancellation })
+        if JobIsCancelled()
+            JobCancel()
+            return
+        end if
+        if not IsAssociativeArray(video) or video.error <> invalid
+            JobError("Failed to load video details")
+            return
+        end if
+        JobSuccessData({ details: VideoDetailsParser.FromInvidious(video) })
+        return
+    end if
+
+    request = Innertube.CreateNextRequest({ "videoId": videoId })
+    request.Cancellation(cancellation)
+    response = request.Await()
+    if JobIsCancelled()
+        JobCancel()
+        return
+    end if
+    if not response.IsSuccess()
+        JobError(response.ErrorMessage())
+        return
+    end if
+
+    JobSuccessData({ details: VideoDetailsParser.FromWatchNext(response.Json()) })
+end function

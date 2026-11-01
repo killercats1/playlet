@@ -1229,6 +1229,14 @@
         <translation>Refresh Home</translation>
     </message>
     <message>
+        <source>Video details</source>
+        <translation>Video details</translation>
+    </message>
+    <message>
+        <source>%1 likes</source>
+        <translation>%1 likes</translation>
+    </message>
+    <message>
         <source>Refresh Bookmarks</source>
         <translation>Refresh Bookmarks</translation>
     </message>

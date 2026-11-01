@@ -5,6 +5,7 @@ import "pkg:/components/JobSystem/JobSystem.bs"
 import "pkg:/components/Navigation/LongPress.bs"
 import "pkg:/components/PlaylistView/PlaylistUtils.bs"
 import "pkg:/components/Services/Invidious/InvidiousToContentNode.bs"
+import "pkg:/components/VideoDetailsView/VideoDetailsUtils.bs"
 import "pkg:/components/VideoFeed/FeedLoadState.bs"
 import "pkg:/source/utils/DisposableObserve.bs"
 import "pkg:/source/utils/ErrorUtils.bs"
@@ -149,6 +150,7 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
     if rowItem.type = "video"
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.PlayVideo), m.videoQueue, "FuncPlayVideo", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.QueueVideo), m.videoQueue, "FuncAddToQueueVideo", [rowItem]))
+        options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.VideoDetails), m.top, "OpenVideoDetails", [rowItem]))
 
         authorId = rowItem.authorId
         if not StringUtils.IsNullOrEmpty(authorId)
@@ -180,6 +182,10 @@ end function
 
 function OpenChannel(channel as object)
     ChannelUtils.Open(channel)
+end function
+
+function OpenVideoDetails(video as object) as void
+    VideoDetailsUtils.Open(video, m.appController)
 end function
 
 function OpenVideoChannel(video as object) as void

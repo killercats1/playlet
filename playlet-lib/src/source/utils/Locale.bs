@@ -418,10 +418,16 @@ namespace Locale
         OpenPlaylist = "Open Playlist"
         OpenPlaylistChannel = "Open Playlist Channel"
         OpenVideoChannel = "Open Video Channel"
+        VideoDetails = "Video details"
         RefreshHome = "Refresh Home"
         RefreshBookmarks = "Refresh Bookmarks"
         RemoveFromBookmarks = "Remove from %1 bookmarks"
         AddToBookmark = "Add to %1 bookmark"
+    end enum
+
+    @locale
+    enum VideoDetails
+        Likes = "%1 likes"
     end enum
 
     @locale
