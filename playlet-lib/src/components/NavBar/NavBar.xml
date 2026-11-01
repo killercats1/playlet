@@ -53,10 +53,10 @@
                 focusBitmapUri="pkg:/images/white.$$RES$$.9.png"
                 focusBitmapBlendColor="0xFF1C30FF"
                 vertFocusAnimationStyle="floatingFocus"
-                numRows="7"
+                numRows="9"
                 scrollSpeed="99999"
-                itemSpacing="[0, 16]"
-                translation="[13, 150]">
+                itemSpacing="[0, 10]"
+                translation="[13, 130]">
             </MarkupList>
         </Rectangle>
 

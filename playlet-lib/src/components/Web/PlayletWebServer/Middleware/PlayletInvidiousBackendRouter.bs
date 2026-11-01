@@ -91,12 +91,14 @@ namespace Http
                 return true
             end if
 
+            ' Like the home page, subscriptions can come back as several shelves: keep all of them.
+            merged = m.MergeFeeds(result.feeds)
             responseBody = {
-                "videos": ValidArray(result.feeds[0].items)
+                "videos": ValidArray(merged.items)
             }
 
-            if result.feeds[0].DoesExist("continuation")
-                responseBody.continuation = result.feeds[0].continuation
+            if merged.DoesExist("continuation")
+                responseBody.continuation = merged.continuation
             end if
 
             response.Json(responseBody)
@@ -335,15 +337,15 @@ namespace Http
                 return true
             end if
 
-            response.Json(m.MergeHomeFeeds(result.feeds))
+            response.Json(m.MergeFeeds(result.feeds))
 
             return true
         end function
 
-        ' YouTube's home page comes back as several shelves (feeds). Instead of only the first shelf, put all of
-        ' them in the Recommended row, in order and without duplicates, so it holds everything the official
-        ' app's home shows. Paging continues the first shelf that has more to load.
-        function MergeHomeFeeds(feeds as object) as object
+        ' YouTube's home page (and subscriptions) come back as several shelves (feeds). Instead of only the first
+        ' shelf, put all of them in the one row, in order and without duplicates, so it holds everything the
+        ' official app shows. Paging continues the first shelf that has more to load.
+        function MergeFeeds(feeds as object) as object
             maxItems = 150
             merged = {}
             merged.Append(feeds[0])
@@ -365,7 +367,7 @@ namespace Http
                     if items.Count() >= maxItems
                         exit for
                     end if
-                    key = m.HomeFeedItemKey(item)
+                    key = m.FeedItemKey(item)
                     if key <> ""
                         if seen.DoesExist(key)
                             continue for
@@ -383,7 +385,7 @@ namespace Http
             return merged
         end function
 
-        function HomeFeedItemKey(item as object) as string
+        function FeedItemKey(item as object) as string
             if not IsAssociativeArray(item)
                 return ""
             end if

@@ -5,6 +5,7 @@ namespace Locale
         Profile = "Profile"
         Search = "Search"
         Home = "Home"
+        Library = "Library"
         Bookmarks = "Bookmarks"
         Settings = "Settings"
         Remote = "Remote"

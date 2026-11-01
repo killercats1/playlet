@@ -3,7 +3,8 @@ import "pkg:/source/utils/Types.bs"
 
 namespace HomeScreenUtils
 
-    function GetFeed(feedFileName as string, preferences as object) as object
+    ' preferences = invalid loads the rows as listed, without the "Edit home screen" layout.
+    function GetFeed(feedFileName as string, preferences as dynamic) as object
         feed = StringUtils.ParseJsonSafe(ReadAsciiFile(feedFileName))
         for each item in feed
             item.title = Tr(item.title)
@@ -12,6 +13,10 @@ namespace HomeScreenUtils
                 feedSource.title = Tr(feedSource.title)
             end for
         end for
+
+        if preferences = invalid
+            return feed
+        end if
 
         homeLayout = preferences["misc.home_screen_layout"]
         if not IsArray(homeLayout) or homeLayout.Count() = 0

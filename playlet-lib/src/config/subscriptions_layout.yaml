@@ -1,0 +1,8 @@
+# Rows of the Subscriptions tab in the side bar.
+- title: Subscriptions
+  id: subscriptions
+  feedSources:
+    - id: inv_auth_feed
+      title: Subscriptions
+      apiType: Invidious
+      endpoint: auth_feed

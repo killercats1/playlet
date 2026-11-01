@@ -246,10 +246,6 @@
         type: "array",
         defaultValue: [
           {
-            id: "subscriptions",
-            enabled: true,
-          },
-          {
             id: "recommended",
             enabled: true,
           },
@@ -258,12 +254,16 @@
             enabled: true,
           },
           {
+            id: "subscriptions",
+            enabled: false,
+          },
+          {
             id: "playlists",
-            enabled: true,
+            enabled: false,
           },
           {
             id: "watch_history",
-            enabled: true,
+            enabled: false,
           },
           {
             id: "trending_livestreams",

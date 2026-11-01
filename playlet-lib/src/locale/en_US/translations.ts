@@ -17,6 +17,10 @@
         <translation>Home</translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>Library</translation>
+    </message>
+    <message>
         <source>Bookmarks</source>
         <translation>Bookmarks</translation>
     </message>

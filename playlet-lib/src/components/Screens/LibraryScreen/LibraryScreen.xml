@@ -1,0 +1,29 @@
+<component name="LibraryScreen" extends="Group" includes="AutoBind,Focus,ContextMenuProvider">
+    <!-- Rows screen for the Library tab (watch history, playlists). Shares HomeScreen's code; only the rows file differs, and the
+    "Edit home screen" preference doesn't apply. -->
+    <interface>
+        <field id="navBar" type="node" bind="/NavBar" />
+        <field id="invidious" type="node" bind="/Invidious" />
+        <field id="preferences" type="node" bind="/Preferences" />
+        <field id="feedFile" type="string" value="libpkg:/config/library_layout.yaml" />
+        <field id="useHomeLayout" type="boolean" value="false" />
+    </interface>
+    <children>
+        <VideoRowList
+            itemComponentName="RowCell"
+            id="rowList"
+            translation="[0,50]"
+            numRows="2"
+            rowitemSize="[[350,196]]"
+            rowItemSpacing="[[25,0]]"
+            itemSize="[1280,326]"
+            itemSpacing="[0,65]"
+            rowLabelOffset="[[90,20]]"
+            focusXOffset="[90]"
+            showRowLabel="[true]"
+            rowFocusAnimationStyle="floatingfocus"
+            variableWidthItems="true"
+            focusBitmapUri="pkg:/images/focus-glow-padding-30.$$RES$$.9.png"
+        />
+    </children>
+</component>

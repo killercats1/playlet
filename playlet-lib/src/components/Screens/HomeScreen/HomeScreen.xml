@@ -4,6 +4,8 @@
         <field id="invidious" type="node" bind="/Invidious" />
         <field id="preferences" type="node" bind="/Preferences" />
         <field id="feedFile" type="string" value="libpkg:/config/default_home_layout.yaml" />
+        <!-- the "Edit home screen" preference only applies to Home, not the other row screens sharing this code -->
+        <field id="useHomeLayout" type="boolean" value="true" />
     </interface>
     <children>
         <VideoRowList
