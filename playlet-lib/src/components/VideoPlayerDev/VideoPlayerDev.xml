@@ -118,6 +118,10 @@
         <!-- App-drawn captions (CC button): shown while chrome is hidden too; moves up while chrome shows. -->
         <CaptionsOverlay id="captionsOverlay" />
 
+        <!-- ===================== UpNextPanel (OUTSIDE Chrome) ===================== -->
+        <!-- Related videos along the bottom (Down from the progress bar); virtual focus, opened/closed here. -->
+        <UpNextPanel id="upNextPanel" visible="false" />
+
         <!-- ===================== LoadBufferSpinner (OUTSIDE Chrome) ===================== -->
         <!-- One component, two modes (first-load overlay, mid-stream buffering); `visible` derives from `mode`,
              not chrome-gated, so it shows while chrome is hidden. -->

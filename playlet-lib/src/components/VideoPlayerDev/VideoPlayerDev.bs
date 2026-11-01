@@ -3,6 +3,7 @@ import "pkg:/components/Dialog/DialogUtils.bs"
 import "pkg:/components/JobSystem/Jobs.bs"
 import "pkg:/components/JobSystem/JobSystem.bs"
 import "pkg:/components/Services/Innertube/Constants.bs"
+import "pkg:/components/Services/Invidious/InvidiousToContentNode.bs"
 import "pkg:/components/VideoPlayer/Lounge.bs"
 import "pkg:/components/VideoPlayerDev/ErrorDialogController.bs"
 import "pkg:/components/VideoPlayerDev/PlaybackTelemetry.bs"
@@ -95,6 +96,8 @@ function Initialize()
     m.buttonRow = m.top.findNode("buttonRow")
     m.fullScreenHint = m.top.findNode("fullScreenHint")
     m.captionsOverlay = m.top.findNode("captionsOverlay")
+    m.upNextPanel = m.top.findNode("upNextPanel")
+    m.upNextOpen = false
     ' app-drawn captions (CC button): remembered across videos and launches, in Playlet's own registry.
     m.captionsEnabled = RegistryUtils.Read(RegistryUtils.CAPTIONS_ENABLED) = "true"
 
@@ -340,6 +343,11 @@ end function
 ' Key router — route intent, hold no behavior.
 '===============================================================================
 function OnKeyEvent(key as string, press as boolean) as boolean
+    ' The Up next panel, while open, takes the keys.
+    if m.upNextOpen
+        return HandleUpNextKey(key, press)
+    end if
+
     ' The SponsorBlock manual-skip notice outranks the focus tiers: while it is armed and on screen, OK does
     ' what the notice says (skip) no matter which tier holds focus, and Back dismisses the notice (the escape
     ' hatch for "I don't want to skip") instead of acting on the player.
@@ -363,6 +371,9 @@ function OnKeyEvent(key as string, press as boolean) as boolean
             else if m.focusTarget = PlayerCoordinatorLogic.FocusTarget.Buttons
                 m.buttonRow.nudge = true
                 ArmAutoHide()
+            else if key = RemoteKeys.Down
+                ' Down at the bottom tier (the bar) opens Up next, when there are related videos.
+                OpenUpNext()
             end if
             return true
         end if
@@ -575,7 +586,95 @@ function ActivateButton(index as integer) as void
     SyncFocus()
 end function
 
-'' The Next button: the next video in the queue, or else the first recommended one (even with autoplay off).
+''-------------------------------------------------------------------------------
+' Up next: the related videos YouTube sent with this video (the ones autoplay picks from), in a strip
+' along the bottom. Left/Right move, OK plays, Up/Down/Back close it; any other key closes it and acts.
+'-------------------------------------------------------------------------------
+function OpenUpNext() as boolean
+    content = BuildUpNextContent()
+    if content = invalid
+        return false
+    end if
+    m.upNextPanel.content = content
+    m.upNextPanel.focusedIndex = 0
+    HideChromeNow()
+    m.upNextPanel.visible = true
+    m.upNextOpen = true
+    return true
+end function
+
+function CloseUpNext(revealChrome as boolean) as void
+    if not m.upNextOpen
+        return
+    end if
+    m.upNextOpen = false
+    m.upNextPanel.visible = false
+    if revealChrome
+        ShowChrome()
+    end if
+end function
+
+function BuildUpNextContent() as dynamic
+    content = m.top.content
+    if content = invalid or not content.hasField("metadata")
+        return invalid
+    end if
+    metadata = content.metadata
+    if not IsAssociativeArray(metadata) or not IsArray(metadata.recommendedVideos)
+        return invalid
+    end if
+
+    instance = m.invidious@.GetInstance()
+    videos = CreateObject("roSGNode", "ContentNode")
+    for each item in metadata.recommendedVideos
+        if IsAssociativeArray(item) and IsString(item.videoId) and item.videoId <> ""
+            videos.appendChild(InvidiousContent.ToVideoContentNode(invalid, item, instance))
+            if videos.getChildCount() >= 12
+                exit for
+            end if
+        end if
+    end for
+    if videos.getChildCount() = 0
+        return invalid
+    end if
+    return videos
+end function
+
+function HandleUpNextKey(key as string, press as boolean) as boolean
+    if not press
+        ' the panel took the press; swallow its release too
+        return key = RemoteKeys.Left or key = RemoteKeys.Right or key = RemoteKeys.Ok or key = RemoteKeys.Up or key = RemoteKeys.Down or key = RemoteKeys.Back
+    end if
+
+    index = m.upNextPanel.focusedIndex
+    if key = RemoteKeys.Left
+        if index > 0
+            m.upNextPanel.focusedIndex = index - 1
+        end if
+        return true
+    else if key = RemoteKeys.Right
+        if index < m.upNextPanel.itemCount - 1
+            m.upNextPanel.focusedIndex = index + 1
+        end if
+        return true
+    else if key = RemoteKeys.Ok
+        video = m.upNextPanel.content.getChild(index)
+        CloseUpNext(false)
+        if video <> invalid
+            m.videoQueue.playVideo = video
+        end if
+        return true
+    else if key = RemoteKeys.Up or key = RemoteKeys.Down or key = RemoteKeys.Back
+        CloseUpNext(true)
+        return true
+    end if
+
+    ' play/pause, seeking, ...: close the panel and handle the key as usual
+    CloseUpNext(false)
+    return OnKeyEvent(key, press)
+end function
+
+' The Next button: the next video in the queue, or else the first recommended one (even with autoplay off).
 ' Nothing to play: the button pulses.
 function PlayNextVideo() as void
     if not VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences, true)
@@ -1044,6 +1143,9 @@ function OnFullScreenChange() as void
         m.captionsOverlay.fullscreen = fullscreen
     end if
     ApplyCaptionSuppression()
+    if not fullscreen
+        CloseUpNext(false)
+    end if
     ' minimized: no player UI at all. Reset any active transport (the bif/glyph clear; the underlying play/pause
     ' stays as-is) and hide chrome/spinner/pause now. Fires for the minimize button, external minimize, and a
     ' video that starts minimized.

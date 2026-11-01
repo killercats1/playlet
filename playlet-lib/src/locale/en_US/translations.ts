@@ -1253,6 +1253,10 @@
         <translation>%1 likes</translation>
     </message>
     <message>
+        <source>Up next</source>
+        <translation>Up next</translation>
+    </message>
+    <message>
         <source>Refresh Bookmarks</source>
         <translation>Refresh Bookmarks</translation>
     </message>

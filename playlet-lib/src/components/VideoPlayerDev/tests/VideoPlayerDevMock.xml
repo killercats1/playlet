@@ -108,6 +108,7 @@
             <ButtonRow id="buttonRow" />
         </Group>
         <CaptionsOverlay id="captionsOverlay" />
+        <UpNextPanel id="upNextPanel" visible="false" />
         <LoadBufferSpinner id="spinner" />
         <LargePause id="largePause" />
     </children>

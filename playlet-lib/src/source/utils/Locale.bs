@@ -430,6 +430,11 @@ namespace Locale
     end enum
 
     @locale
+    enum Player
+        UpNext = "Up next"
+    end enum
+
+    @locale
     enum VideoDetails
         Likes = "%1 likes"
     end enum
