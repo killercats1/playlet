@@ -17,6 +17,7 @@ function Init()
     m.content.addField("index", "integer", false)
     m.content.index = m.top.index
     m.shortsJob = invalid
+    m.shortsAttempts = 0
     m.sleepTimer = m.top.findNode("SleepTimer")
     m.sleepTimer.ObserveField("fire", FuncName(OnSleepTimerFire))
 end function
@@ -51,10 +52,11 @@ function OnIndexChange()
     MaybeLoadMoreShorts()
 end function
 
-' Endless Shorts: while a Short from the Shorts tab plays within 3 of the end of the queue, load the next batch.
-' The last Short holds where to continue from ("shortsMore": "v:<videoId>" or "c:<token>"); it is cleared
-' when used so the same batch isn't loaded twice, and the new last Short gets the next one.
-function MaybeLoadMoreShorts() as void
+' Endless Shorts: while a Short from the Shorts tab plays within 6 of the end of the queue (or when the player
+' asks, at the very end), load the next batch. The last Short holds where to continue from ("shortsMore":
+' "v:<videoId>" or "c:<token>"). A batch that brings nothing new is retried from a different Short in the queue,
+' up to 3 times; shortsLoading is true while a batch loads, so the player can wait for it.
+function MaybeLoadMoreShorts(force = false as boolean) as void
     if m.shortsJob <> invalid
         return
     end if
@@ -63,42 +65,88 @@ function MaybeLoadMoreShorts() as void
     if current = invalid or not current.hasField("isShort") or current.isShort <> true
         return
     end if
-    if count - 1 - m.top.index > 3
+    if not force and count - 1 - m.top.index > 6
         return
     end if
     last = m.content.getChild(count - 1)
-    if last = invalid or not last.hasField("shortsMore") or not IsString(last.shortsMore) or last.shortsMore = ""
+    if last = invalid
         return
     end if
-    more = last.shortsMore
-    last.shortsMore = ""
+    more = ""
+    if last.hasField("shortsMore") and IsString(last.shortsMore)
+        more = last.shortsMore
+        last.shortsMore = ""
+    end if
+    if more = ""
+        if not force and m.shortsAttempts = 0
+            return
+        end if
+        more = "v:" + RandomShortId()
+    end if
+    StartShortsJob(more, last.videoId)
+end function
 
+function StartShortsJob(more as string, fallbackVideoId as string) as void
+    m.top.shortsLoading = true
     m.shortsJob = JobSystem.CreateCallback(OnShortsJobDone)
-    JobSystem.QueueJob(m.top.jobQueue, Jobs.ShortsSequenceJob, { more: more, videoId: last.videoId, invidious: m.top.invidious }, m.shortsJob)
+    JobSystem.QueueJob(m.top.jobQueue, Jobs.ShortsSequenceJob, { more: more, videoId: fallbackVideoId, invidious: m.top.invidious }, m.shortsJob)
+end function
+
+' A Short in the queue to start the next batch from (another one each retry, so the results differ).
+function RandomShortId() as string
+    count = m.content.getChildCount()
+    for tries = 1 to 5
+        node = m.content.getChild(Rnd(count) - 1)
+        if node <> invalid and node.hasField("isShort") and node.isShort = true and not StringUtils.IsNullOrEmpty(node.videoId)
+            return node.videoId
+        end if
+    end for
+    return ValidString(m.content.getChild(count - 1).videoId)
+end function
+
+function OnLoadMoreShorts() as void
+    MaybeLoadMoreShorts(true)
+    if m.shortsJob = invalid
+        ' nothing to load from: let a waiting player know
+        m.top.shortsLoading = false
+    end if
 end function
 
 function OnShortsJobDone(event as object) as void
     JobSystem.UnobserveCallback(event.getRoSGNode())
     m.shortsJob = invalid
     info = event.getInfo()
-    if not info.success
+
+    nodes = []
+    continuation = ""
+    if info.success
+        instance = m.top.invidious@.GetInstance()
+        for each item in ValidArray(info.data.items)
+            if IsAssociativeArray(item) and IsString(item.videoId) and m.content.findNode(item.videoId) = invalid
+                node = InvidiousContent.ToVideoContentNode(invalid, item, instance)
+                node.addFields({ isShort: true })
+                nodes.Push(node)
+            end if
+        end for
+        continuation = ValidString(info.data.continuation)
+    else
         LogWarnNoTelemetry("No more Shorts:", info.error)
+    end if
+
+    if nodes.Count() = 0
+        m.shortsAttempts += 1
+        if m.shortsAttempts < 3
+            count = m.content.getChildCount()
+            StartShortsJob("v:" + RandomShortId(), ValidString(m.content.getChild(count - 1).videoId))
+            return
+        end if
+        LogWarnNoTelemetry("No more Shorts after 3 tries")
+        m.shortsAttempts = 0
+        m.top.shortsLoading = false
         return
     end if
 
-    instance = m.top.invidious@.GetInstance()
-    nodes = []
-    for each item in ValidArray(info.data.items)
-        if IsAssociativeArray(item) and IsString(item.videoId) and m.content.findNode(item.videoId) = invalid
-            node = InvidiousContent.ToVideoContentNode(invalid, item, instance)
-            node.addFields({ isShort: true })
-            nodes.Push(node)
-        end if
-    end for
-    if nodes.Count() = 0
-        return
-    end if
-    continuation = ValidString(info.data.continuation)
+    m.shortsAttempts = 0
     lastNode = nodes[nodes.Count() - 1]
     if continuation <> ""
         lastNode.addFields({ shortsMore: "c:" + continuation })
@@ -108,8 +156,7 @@ function OnShortsJobDone(event as object) as void
     end if
     m.content.appendChildren(nodes)
     UpdateHasPreviousNext()
-    ' a short batch may leave the playing Short close to the end again
-    MaybeLoadMoreShorts()
+    m.top.shortsLoading = false
 end function
 
 function OnPlay() as void

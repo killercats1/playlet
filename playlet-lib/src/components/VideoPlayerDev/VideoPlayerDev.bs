@@ -103,6 +103,8 @@ function Initialize()
     m.likeJob = invalid
     m.subscribeJob = invalid
     m.subscriptionStatusFetched = false
+    ' endless Shorts: waiting at the end of the queue for the next batch
+    m.waitingForShorts = false
     ' app-drawn captions (CC button): remembered across videos and launches, in Playlet's own registry.
     m.captionsEnabled = RegistryUtils.Read(RegistryUtils.CAPTIONS_ENABLED) = "true"
 
@@ -861,13 +863,52 @@ function IsPlayingShort() as boolean
     return content <> invalid and content.hasField("isShort") and content.isShort = true
 end function
 
+' Next/previous Short. At the end of the queue it never drops into a regular video: it waits (spinner) for the
+' queue's next batch of Shorts, and if none comes, plays the current Short again, like YouTube loops them.
 function FlipShort(forward as boolean) as void
-    if forward
-        VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences, true)
-    else if m.videoQueue.hasPrevious
-        m.videoQueue.previous = true
+    if not forward
+        if m.videoQueue.hasPrevious
+            m.videoQueue.previous = true
+        end if
+        return
+    end if
+    if m.videoQueue.hasNext
+        m.videoQueue.next = true
+        return
+    end if
+    if m.waitingForShorts
+        return
+    end if
+    m.waitingForShorts = true
+    m.spinner.mode = SpinMode.Buffering
+    m.videoQueue.observeFieldScoped("shortsLoading", FuncName(OnShortsLoadingChange))
+    m.videoQueue.loadMoreShorts = true
+    OnShortsLoadingChange()
+end function
+
+function OnShortsLoadingChange() as void
+    if not m.waitingForShorts or m.videoQueue.shortsLoading
+        return
+    end if
+    StopWaitingForShorts()
+    if m.videoQueue.hasNext
+        m.videoQueue.next = true
+    else
+        m.top.control = VideoControl.Replay
     end if
 end function
+
+function StopWaitingForShorts() as void
+    if not m.waitingForShorts
+        return
+    end if
+    m.waitingForShorts = false
+    m.videoQueue.unobserveFieldScoped("shortsLoading")
+    if m.spinner.mode = SpinMode.Buffering
+        m.spinner.mode = SpinMode.Off
+    end if
+end function
+
 
 ' The Next button: the next video in the queue, or else the first recommended one (even with autoplay off).
 ' Nothing to play: the button pulses.
@@ -1766,6 +1807,11 @@ function OnPlaybackFinished() as void
     ' before PlayNext/ClosePlayer: either can close this player, and send its summary, synchronously.
     m.playbackTelemetry.OnFinished()
     LogDebug("playback finished -> PlayNext or close")
+    ' Shorts: on to the next Short (waiting for more at the end, or looping), never a regular video
+    if IsPlayingShort()
+        FlipShort(true)
+        return
+    end if
     if not VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences)
         ClosePlayer()
     end if
@@ -1876,6 +1922,7 @@ function OnClose() as void
     if m.captionsOverlay <> invalid
         m.captionsOverlay.video = invalid
     end if
+    StopWaitingForShorts()
 
     ' stop the coordinator-owned timers.
     m.autoHide.control = "stop"

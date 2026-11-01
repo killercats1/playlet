@@ -23,6 +23,10 @@
         <field id="sleepTimerMinutes" type="integer" value="0" onChange="OnSleepTimerChange" alwaysNotify="true" />
         <field id="sleepTimerEndsAt" type="integer" value="0" />
 
+        <!-- Endless Shorts: the player asks for more at the end of the queue, and waits while shortsLoading. -->
+        <field id="loadMoreShorts" type="boolean" alwaysNotify="true" onChange="OnLoadMoreShorts" />
+        <field id="shortsLoading" type="boolean" value="false" />
+
         <field id="player" type="node" />
         <field id="nowPlaying" type="node" />
 
