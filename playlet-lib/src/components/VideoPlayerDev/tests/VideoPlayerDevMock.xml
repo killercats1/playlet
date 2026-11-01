@@ -107,6 +107,7 @@
             <TrickPlayBar id="trickPlayBar" />
             <ButtonRow id="buttonRow" />
         </Group>
+        <CaptionsOverlay id="captionsOverlay" />
         <LoadBufferSpinner id="spinner" />
         <LargePause id="largePause" />
     </children>

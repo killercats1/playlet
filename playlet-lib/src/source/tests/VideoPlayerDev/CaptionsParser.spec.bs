@@ -1,0 +1,71 @@
+import "pkg:/components/VideoPlayerDev/Captions/CaptionsParser.bs"
+
+namespace Tests
+
+    @suite
+    class CaptionsParserTests extends Rooibos.BaseTestSuite
+
+        @describe("CaptionsParser.Parse json3")
+
+        @it("turns events into cues, joining segments and skipping line-break-only events")
+        function _()
+            body = FormatJson({
+                events: [
+                    { tStartMs: 1000, dDurationMs: 2000, segs: [{ utf8: "Hello" }, { utf8: " world" }] }
+                    { tStartMs: 2500, dDurationMs: 10, aAppend: 1, segs: [{ utf8: Chr(10) }] }
+                    { tStartMs: 4000, dDurationMs: 1500, segs: [{ utf8: "Second" }] }
+                    { tStartMs: 0, dDurationMs: 99000 }
+                ]
+            })
+            cues = CaptionsParser.Parse(body)
+            m.assertEqual(cues.Count(), 2)
+            m.assertEqual(cues[0].t, "Hello world")
+            m.assertEqual(cues[0].s, 1.0)
+            m.assertEqual(cues[0].e, 3.0)
+            m.assertEqual(cues[1].t, "Second")
+            m.assertEqual(cues[1].e, 5.5)
+        end function
+
+        @describe("CaptionsParser.Parse vtt")
+
+        @it("reads cue times (with and without hours), drops cue settings and tags, decodes entities")
+        function _()
+            nl = Chr(13) + Chr(10)
+            body = "WEBVTT" + nl + "Kind: captions" + nl + nl
+            body += "00:00:01.000 --> 00:00:02.500 align:start position:0%" + nl + "<c>Tom &amp; Jerry</c>" + nl + nl
+            body += "01:00.000 --> 01:02.000" + nl + "line one" + nl + "line two" + nl
+            cues = CaptionsParser.Parse(body)
+            m.assertEqual(cues.Count(), 2)
+            m.assertEqual(cues[0].t, "Tom & Jerry")
+            m.assertEqual(cues[0].s, 1.0)
+            m.assertEqual(cues[0].e, 2.5)
+            m.assertEqual(cues[1].s, 60.0)
+            m.assertEqual(cues[1].t, "line one" + Chr(10) + "line two")
+        end function
+
+        @it("returns no cues for an unknown format")
+        function _()
+            m.assertEqual(CaptionsParser.Parse("<tt></tt>").Count(), 0)
+            m.assertEqual(CaptionsParser.Parse("").Count(), 0)
+        end function
+
+        @describe("CaptionsParser.ActiveText")
+
+        @it("shows every cue covering the time, in start order, and nothing between cues")
+        function _()
+            cues = [
+                { s: 1.0, e: 4.0, t: "first" }
+                { s: 3.0, e: 6.0, t: "second" }
+                { s: 8.0, e: 9.0, t: "third" }
+            ]
+            m.assertEqual(CaptionsParser.ActiveText(cues, 0.5), "")
+            m.assertEqual(CaptionsParser.ActiveText(cues, 2.0), "first")
+            m.assertEqual(CaptionsParser.ActiveText(cues, 3.5), "first" + Chr(10) + "second")
+            m.assertEqual(CaptionsParser.ActiveText(cues, 7.0), "")
+            m.assertEqual(CaptionsParser.ActiveText(cues, 8.5), "third")
+            m.assertEqual(CaptionsParser.ActiveText([], 1.0), "")
+        end function
+
+    end class
+
+end namespace

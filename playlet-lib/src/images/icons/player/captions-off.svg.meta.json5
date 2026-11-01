@@ -1,0 +1,11 @@
+{
+  inputHash: '276c1a7c5ed8333cf2a455ebd54edb9b',
+  outputs: [
+    {
+      outputFilePath: 'images/icons/player/captions-off.png',
+      outputHash: 'be21cf7b0f165eec503e456f5865d062',
+      width: 63,
+      height: 63,
+    },
+  ],
+}

@@ -1,0 +1,34 @@
+import "pkg:/components/VideoPlayerDev/Captions/CaptionsParser.bs"
+import "pkg:/source/services/HttpClient.bs"
+import "pkg:/source/utils/UrlUtils.bs"
+
+' Downloads one caption track and parses it into cues for CaptionsOverlay.
+@job("CaptionsJob")
+function ExecuteJob() as void
+    input = JobGetInput()
+    url = ValidString(input.url)
+    if url = ""
+        JobError("No caption url")
+        return
+    end if
+
+    ' YouTube's own timedtext tracks are asked for as json3: simple to parse, and it keeps the timing of
+    ' auto-generated captions. Other tracks (e.g. from an Invidious instance) come as WebVTT.
+    if url.InStr("/api/timedtext") <> -1
+        query = UrlUtils.ParseQueryComponents(url)
+        query["fmt"] = "json3"
+        url = UrlUtils.SetQueryParams(url, query)
+    end if
+
+    request = HttpClient.Get(url)
+    request.Cancellation(JobGetCancellation())
+    response = request.Await()
+    if not response.IsSuccess()
+        JobError(response.ErrorMessage())
+        return
+    end if
+
+    JobSuccessData({
+        cues: CaptionsParser.Parse(response.Text())
+    })
+end function

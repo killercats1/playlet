@@ -13,6 +13,7 @@ import "pkg:/components/VideoPlayerDev/VideoNode.bs"
 import "pkg:/components/VideoQueue/VideoQueueUtils.bs"
 import "pkg:/source/utils/Locale.bs"
 import "pkg:/source/utils/Logging.bs"
+import "pkg:/source/utils/RegistryUtils.bs"
 import "pkg:/source/utils/RemoteKeys.bs"
 import "pkg:/source/utils/StringUtils.bs"
 import "pkg:/source/utils/Types.bs"
@@ -93,6 +94,9 @@ function Initialize()
     m.largePause = m.top.findNode("largePause")
     m.buttonRow = m.top.findNode("buttonRow")
     m.fullScreenHint = m.top.findNode("fullScreenHint")
+    m.captionsOverlay = m.top.findNode("captionsOverlay")
+    ' app-drawn captions (CC button): remembered across videos and launches, in Playlet's own registry.
+    m.captionsEnabled = RegistryUtils.Read(RegistryUtils.CAPTIONS_ENABLED) = "true"
 
     m.autoHide = m.top.findNode("autoHide")
     m.transportTimer = m.top.findNode("transportTimer")
@@ -174,6 +178,18 @@ function OnNodeReady()
     ' a player that starts minimized shows the PiP hint (1s after the shrink settles, auto-hides after 5s).
     m.showFullScreenHint = not m.container.fullscreen
     RefreshFullScreenHint()
+
+    if m.captionsOverlay <> invalid
+        m.captionsOverlay.jobQueue = m.jobQueue
+        m.captionsOverlay.chrome = m.chrome
+        m.captionsOverlay.fullscreen = m.container.fullscreen
+        m.captionsOverlay.enabled = m.captionsEnabled
+        m.captionsOverlay.video = m.top
+    end if
+    m.buttonRow.captionsOn = m.captionsEnabled
+    if m.captionsEnabled
+        ApplyCaptionSuppression()
+    end if
 
     ' first-load look (title + spinner, no bar) until the first frame, but only when fullscreen; a video that
     ' starts minimized shows no UI at all.
@@ -551,8 +567,28 @@ function ActivateButton(index as integer) as void
     else if index = PlayerCoordinatorLogic.PlayerButton.Minimize
         MinimizeReset()
         VideoQueueUtils.ToggleVideoPictureInPicture(m.videoQueue)
+    else if index = PlayerCoordinatorLogic.PlayerButton.Captions
+        ToggleCaptions()
     end if
     SyncFocus()
+end function
+
+' The CC button: Playlet draws the captions itself (CaptionsOverlay), so the TV's own caption setting is never
+' touched. The choice is remembered for the next videos.
+function ToggleCaptions() as void
+    m.captionsEnabled = not m.captionsEnabled
+    RegistryUtils.Write(RegistryUtils.CAPTIONS_ENABLED, m.captionsEnabled.ToStr())
+    if m.captionsOverlay <> invalid
+        m.captionsOverlay.enabled = m.captionsEnabled
+    end if
+    m.buttonRow.captionsOn = m.captionsEnabled
+    ApplyCaptionSuppression()
+end function
+
+' The device's own captions (which follow the TV-wide caption setting) are hidden while minimized, and while
+' Playlet draws its own so they don't show twice.
+function ApplyCaptionSuppression() as void
+    m.top.suppressCaptions = (not m.container.fullscreen) or m.captionsEnabled
 end function
 
 ' Push the focus state to the renderers. The button row highlights its focused button while the BUTTON tier
@@ -994,7 +1030,10 @@ function OnFullScreenChange() as void
     ' the SponsorBlock notification rides with the player: hidden while minimized, shown when full.
     m.sponsorblock.SetVisible(fullscreen)
     ' after a PiP restore the OS leaves captions blank while enableUI=false (resizing alone doesn't); suppress on minimize, release on restore to re-engage them.
-    m.top.suppressCaptions = not fullscreen
+    if m.captionsOverlay <> invalid
+        m.captionsOverlay.fullscreen = fullscreen
+    end if
+    ApplyCaptionSuppression()
     ' minimized: no player UI at all. Reset any active transport (the bif/glyph clear; the underlying play/pause
     ' stays as-is) and hide chrome/spinner/pause now. Fires for the minimize button, external minimize, and a
     ' video that starts minimized.
@@ -1517,6 +1556,9 @@ function OnClose() as void
     m.fullScreenHintTimer.unobserveField("fire")
     m.chromeFadeIn.unobserveField("state")
     m.chromeFadeOut.unobserveField("state")
+    if m.captionsOverlay <> invalid
+        m.captionsOverlay.video = invalid
+    end if
 
     ' stop the coordinator-owned timers.
     m.autoHide.control = "stop"

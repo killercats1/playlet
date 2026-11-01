@@ -112,6 +112,10 @@
             <ButtonRow id="buttonRow" />
         </Group>
 
+        <!-- ===================== CaptionsOverlay (OUTSIDE Chrome) ===================== -->
+        <!-- App-drawn captions (CC button): shown while chrome is hidden too; moves up while chrome shows. -->
+        <CaptionsOverlay id="captionsOverlay" />
+
         <!-- ===================== LoadBufferSpinner (OUTSIDE Chrome) ===================== -->
         <!-- One component, two modes (first-load overlay, mid-stream buffering); `visible` derives from `mode`,
              not chrome-gated, so it shows while chrome is hidden. -->

@@ -1,0 +1,242 @@
+import "pkg:/components/JobSystem/Jobs.bs"
+import "pkg:/components/JobSystem/JobSystem.bs"
+import "pkg:/components/VideoPlayerDev/Captions/CaptionsParser.bs"
+import "pkg:/source/utils/StringUtils.bs"
+import "pkg:/source/utils/Types.bs"
+
+const CAPTIONS_BOTTOM_Y = 690
+' while the player controls show, captions sit above the button row
+const CAPTIONS_BOTTOM_Y_CHROME = 545
+' how far past the last reported position (reported once a second) the clock may run on its own
+const MAX_EXTRAPOLATION_SECONDS = 1.5
+
+function Init()
+    m.label = m.top.findNode("label")
+    m.background = m.top.findNode("background")
+    m.tick = m.top.findNode("tick")
+    m.messageTimer = m.top.findNode("messageTimer")
+    m.tick.ObserveField("fire", FuncName(OnTick))
+    m.messageTimer.ObserveField("fire", FuncName(OnMessageTimer))
+
+    m.observedVideo = invalid
+    m.positionClock = CreateObject("roTimespan")
+    m.basePosition = 0.0
+    m.message = ""
+    ' notes like "No captions for this video" only follow a press of the CC button, not every video
+    m.announce = false
+    m.shownText = ""
+    m.shownChromeUp = false
+    ResetTrack()
+end function
+
+function ResetTrack() as void
+    if m.job <> invalid
+        m.job.cancel = true
+    end if
+    m.job = invalid
+    m.cues = invalid
+    m.trackMissing = false
+    m.trackFailed = false
+end function
+
+function OnVideoSet() as void
+    if m.observedVideo <> invalid
+        m.observedVideo.UnobserveFieldScoped("content")
+        m.observedVideo.UnobserveFieldScoped("position")
+    end if
+    video = m.top.video
+    m.observedVideo = video
+    if video = invalid
+        ' the player closed
+        ResetTrack()
+        m.tick.control = "stop"
+        m.messageTimer.control = "stop"
+        m.top.visible = false
+        return
+    end if
+    video.ObserveFieldScoped("content", FuncName(OnContentChange))
+    video.ObserveFieldScoped("position", FuncName(OnPosition))
+    Refresh()
+end function
+
+function OnContentChange() as void
+    ResetTrack()
+    m.message = ""
+    m.announce = false
+    Refresh()
+end function
+
+function OnEnabledChange() as void
+    ' turned on by the CC button during playback (not the remembered setting applied at startup)
+    m.announce = m.top.enabled and m.top.video <> invalid
+    Refresh()
+end function
+
+function OnPosition() as void
+    video = m.top.video
+    if video = invalid
+        return
+    end if
+    m.basePosition = video.position
+    m.positionClock.Mark()
+end function
+
+function Refresh() as void
+    showing = m.top.enabled and m.top.fullscreen and m.top.video <> invalid
+    m.top.visible = showing
+    if not showing
+        m.tick.control = "stop"
+        return
+    end if
+    m.tick.control = "start"
+    OnTick()
+end function
+
+' Shows a short note in place of the captions (e.g. "No captions for this video").
+function ShowMessage(message as string) as void
+    if not m.announce
+        return
+    end if
+    m.announce = false
+    m.message = message
+    m.messageTimer.control = "stop"
+    m.messageTimer.control = "start"
+    Render(message)
+end function
+
+function OnMessageTimer() as void
+    m.message = ""
+    OnTick()
+end function
+
+function OnTick() as void
+    if not m.top.visible
+        return
+    end if
+
+    if m.cues = invalid
+        LoadTrack()
+    end if
+
+    if m.message <> ""
+        Render(m.message)
+        return
+    end if
+
+    if m.cues = invalid
+        Render("")
+        return
+    end if
+
+    Render(CaptionsParser.ActiveText(m.cues, CurrentPosition()))
+end function
+
+function CurrentPosition() as float
+    position = m.basePosition
+    video = m.top.video
+    if video <> invalid and video.state = "playing"
+        elapsed = m.positionClock.TotalMilliseconds() / 1000.0
+        if elapsed > MAX_EXTRAPOLATION_SECONDS
+            elapsed = MAX_EXTRAPOLATION_SECONDS
+        end if
+        position += elapsed
+    end if
+    return position
+end function
+
+function LoadTrack() as void
+    if m.job <> invalid or m.trackMissing or m.trackFailed
+        return
+    end if
+    video = m.top.video
+    if video = invalid or video.content = invalid
+        return
+    end if
+
+    tracks = video.content.SubtitleTracks
+    if not IsArray(tracks) or tracks.Count() = 0
+        ' the content's metadata (and its tracks) may still be loading; only call it missing once it plays.
+        if video.state = "playing"
+            m.trackMissing = true
+            ShowMessage("No captions for this video")
+        end if
+        return
+    end if
+
+    track = PickTrack(tracks)
+    m.job = JobSystem.CreateCallback(OnCaptionsJobDone)
+    JobSystem.QueueJob(m.top.jobQueue, Jobs.CaptionsJob, { url: ValidString(track.TrackName) }, m.job)
+end function
+
+' The track in the TV's language if there is one (the list puts human-made tracks before auto-generated
+' ones), otherwise the first track.
+function PickTrack(tracks as object) as object
+    language = DeviceLanguage()
+    if language <> ""
+        for each track in tracks
+            if ValidString(track.Language) = language
+                return track
+            end if
+        end for
+    end if
+    return tracks[0]
+end function
+
+' The TV's language as the ISO 639-2 code the tracks use (e.g. "en_US" -> "eng").
+function DeviceLanguage() as string
+    locale = CreateObject("roDeviceInfo").GetCurrentLocale()
+    code = LCase(locale.Left(2))
+    isoLanguageList = StringUtils.ParseJsonSafe(ReadAsciiFile("libpkg:/config/ISO-639-1-to-ISO-639-2T.json5"))
+    if IsAssociativeArray(isoLanguageList) and isoLanguageList.DoesExist(code)
+        return ValidString(isoLanguageList[code])
+    end if
+    return ""
+end function
+
+function OnCaptionsJobDone(event as object) as void
+    JobSystem.UnobserveCallback(event.getRoSGNode())
+    m.job = invalid
+
+    info = event.getInfo()
+    cues = invalid
+    if info.success and IsAssociativeArray(info.data)
+        cues = info.data.cues
+    end if
+
+    if not IsArray(cues) or cues.Count() = 0
+        m.trackFailed = true
+        ShowMessage("Couldn't load captions for this video")
+        return
+    end if
+
+    m.announce = false
+    m.cues = cues
+    OnTick()
+end function
+
+function Render(text as string) as void
+    chrome = m.top.chrome
+    chromeUp = chrome <> invalid and chrome.visible and chrome.opacity > 0.01
+    if text = m.shownText and chromeUp = m.shownChromeUp
+        return
+    end if
+    m.shownText = text
+    m.shownChromeUp = chromeUp
+
+    m.label.text = text
+    if text = ""
+        m.background.visible = false
+        return
+    end if
+
+    bottom = CAPTIONS_BOTTOM_Y
+    if chromeUp
+        bottom = CAPTIONS_BOTTOM_Y_CHROME
+    end if
+    height = m.label.boundingRect().height
+    m.label.translation = [120, bottom - height]
+    m.background.width = 1080
+    m.background.height = height + 16
+    m.background.translation = [100, bottom - height - 8]
+    m.background.visible = true
+end function
