@@ -21,6 +21,18 @@
         <translation>Library</translation>
     </message>
     <message>
+        <source>Music</source>
+        <translation>Music</translation>
+    </message>
+    <message>
+        <source>Trending - Music</source>
+        <translation>Trending - Music</translation>
+    </message>
+    <message>
+        <source>Music playlists</source>
+        <translation>Music playlists</translation>
+    </message>
+    <message>
         <source>Bookmarks</source>
         <translation>Bookmarks</translation>
     </message>

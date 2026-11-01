@@ -303,6 +303,9 @@ namespace InnertubeService
         if trendingType = "gaming"
             browseId = "UCOpNcN46UbXVtpKMrmU4Abg" ' Gaming
             params = "Egh0cmVuZGluZw%3D%3D"
+        else if trendingType = "music"
+            browseId = "UC-9-kyTW8ZkZNDHQJ6FgpwQ" ' Music
+            params = "Egh0cmVuZGluZw%3D%3D"
         else
             browseId = "UC4R8DWoMoI7CAwX8_LjQHig" ' Livestreams (default)
             params = "EgdsaXZldGFikgEDCKEK"
@@ -316,6 +319,12 @@ namespace InnertubeService
         end if
 
         response = request.Await()
+        if not response.IsSuccess() and trendingType = "music"
+            ' no trending tab on the Music channel: its main page
+            request = Innertube.CreateBrowseRequest(browseId, Innertube.ClientType.Web)
+            request.Cancellation(cancellation)
+            response = request.Await()
+        end if
         if not response.IsSuccess()
             return {
                 error: response.ErrorMessage()
@@ -332,6 +341,22 @@ namespace InnertubeService
             disableShorts: disableShorts
             browseId: browseId
         })
+
+        ' If the Music channel has no trending tab, use its main page instead.
+        if trendingType = "music" and (feeds.Count() = 0 or not IsArray(feeds[0].items) or feeds[0].items.Count() = 0)
+            fallbackRequest = Innertube.CreateBrowseRequest(browseId, Innertube.ClientType.Web)
+            fallbackRequest.Cancellation(cancellation)
+            fallbackResponse = fallbackRequest.Await()
+            if fallbackResponse.IsSuccess()
+                response = fallbackResponse
+                feeds = Innertube.ParseResponseDataForFeeds(fallbackResponse.Json(), {
+                    request: fallbackRequest
+                    disableCreatorOnTheRise: true
+                    disableShorts: disableShorts
+                    browseId: browseId
+                })
+            end if
+        end if
 
         result = {
             feeds: feeds

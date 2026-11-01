@@ -1,0 +1,30 @@
+# Rows of the Music tab in the side bar, from YouTube's own Music channel.
+- title: Trending - Music
+  id: trending_music
+  feedSources:
+    - id: inv_trending_music
+      title: Trending - Music
+      apiType: Invidious
+      endpoint: trending
+      queryParams:
+        type: Music
+
+- title: Music
+  id: music_featured
+  feedSources:
+    - id: music_channel_featured
+      title: Music
+      apiType: Invidious
+      endpoint: channel_featured
+      pathParams:
+        ucid: UC-9-kyTW8ZkZNDHQJ6FgpwQ
+
+- title: Music playlists
+  id: music_playlists
+  feedSources:
+    - id: music_channel_playlists
+      title: Music playlists
+      apiType: Invidious
+      endpoint: channel_playlists
+      pathParams:
+        ucid: UC-9-kyTW8ZkZNDHQJ6FgpwQ
