@@ -48,6 +48,8 @@ namespace Locale
         TrendingMusic = "Trending - Music"
         MusicPlaylists = "Music playlists"
         RecommendedMusic = "Recommended music"
+        LikedVideos = "Liked videos"
+        WatchLater = "Watch later"
         Popular = "Popular"
         Videos = "Videos"
         Shorts = "Shorts"

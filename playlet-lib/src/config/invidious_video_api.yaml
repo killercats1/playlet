@@ -83,6 +83,14 @@ auth_playlists:
   authenticated: true
   paginationType: Continuation
 
+# A playlist of the signed-in account (e.g. LL = Liked videos, WL = Watch later), as a row of its videos.
+auth_playlist_videos:
+  title: Playlist
+  url: /api/v1/auth/playlists/{plid}
+  authenticated: true
+  responseHandler: PlaylistVideosHandler
+  paginationType: Continuation
+
 playlist:
   title: Playlist
   url: /api/v1/playlists/{plid}

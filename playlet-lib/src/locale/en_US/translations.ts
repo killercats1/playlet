@@ -37,6 +37,14 @@
         <translation>Recommended music</translation>
     </message>
     <message>
+        <source>Liked videos</source>
+        <translation>Liked videos</translation>
+    </message>
+    <message>
+        <source>Watch later</source>
+        <translation>Watch later</translation>
+    </message>
+    <message>
         <source>Bookmarks</source>
         <translation>Bookmarks</translation>
     </message>

@@ -7,6 +7,26 @@
       apiType: Invidious
       endpoint: watch_history
 
+- title: Liked videos
+  id: liked_videos
+  feedSources:
+    - id: inv_auth_liked_videos
+      title: Liked videos
+      apiType: Invidious
+      endpoint: auth_playlist_videos
+      pathParams:
+        plid: LL
+
+- title: Watch later
+  id: watch_later
+  feedSources:
+    - id: inv_auth_watch_later
+      title: Watch later
+      apiType: Invidious
+      endpoint: auth_playlist_videos
+      pathParams:
+        plid: WL
+
 - title: Playlists
   id: playlists
   feedSources:

@@ -460,6 +460,25 @@ namespace Invidious
             return result
         end function
 
+        ' Like PlaylistHandler, but a failure is an error (the row is dropped) instead of a "[Playlist not found]" tile.
+        function PlaylistVideosHandler(context as object) as object
+            response = context.response
+            if not response.IsSuccess()
+                return invalid
+            end if
+            json = response.Json()
+            if not IsAssociativeArray(json)
+                return invalid
+            end if
+            result = {
+                items: ValidArray(json.videos)
+            }
+            if json.continuation <> invalid
+                result.continuation = json.continuation
+            end if
+            return result
+        end function
+
         function ChannelVideosHandler(context as object) as object
             response = context.response
 

@@ -239,6 +239,8 @@ function RemoveSingleFailedRow(error as dynamic, feedSource as object, feedSourc
     isError = isError or feedSource.id = "music_recommended"
     ' no Shorts, or Shorts disabled: no Shorts row
     isError = isError or feedSource.id = "inv_auth_shorts"
+    ' Liked videos / Watch later: not available (e.g. an Invidious account), or empty
+    isError = isError or feedSource.id = "inv_auth_liked_videos" or feedSource.id = "inv_auth_watch_later"
     if not isError
         return false
     end if
