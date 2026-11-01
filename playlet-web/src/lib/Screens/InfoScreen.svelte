@@ -16,10 +16,6 @@
       displayText: "Playlet Library Version",
     },
     {
-      key: "lib_version_latest",
-      displayText: "Playlet Library Latest Version",
-    },
-    {
       key: "lib_url",
       displayText: "Playlet Library URL",
     },
@@ -73,7 +69,6 @@
     switch (key) {
       case "app_version":
       case "lib_version":
-      case "lib_version_latest":
         return `https://github.com/iBicha/playlet/releases/tag/v${encodeURIComponent(value)}`;
       case "lib_url":
         return /^https?:\/\//.test(value) ? value : undefined;

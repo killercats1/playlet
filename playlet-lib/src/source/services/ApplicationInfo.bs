@@ -41,7 +41,6 @@ class ApplicationInfo
                 lib_git_commit_hash: LibManifestUtils.GetLibGitCommitHash()
             }
 
-            m.appInfo["lib_version_latest"] = "N/A"
             m.appInfo["lib_url"] = "N/A"
             m.appInfo["lib_url_type"] = "N/A"
 
@@ -49,14 +48,6 @@ class ApplicationInfo
             if scene.playletLibLoadedUrl <> invalid
                 m.appInfo["lib_url"] = scene.playletLibLoadedUrl.link
                 m.appInfo["lib_url_type"] = scene.playletLibLoadedUrl.type
-            end if
-        end if
-
-        if m.appInfo.lib_version_latest = "N/A"
-            if not StringUtils.IsNullOrEmpty(m.node.lib_version_latest)
-                m.appInfo["lib_version_latest"] = m.node.lib_version_latest
-            else
-                m.node@.GetLatestPlayletLibVersion()
             end if
         end if
 

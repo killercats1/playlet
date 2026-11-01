@@ -9,9 +9,6 @@ function Init()
         key: "lib_version"
         displayText: "Playlet Library Version"
     }, {
-        key: "lib_version_latest"
-        displayText: "Playlet Library Latest Version"
-    }, {
         key: "lib_url"
         displayText: "Playlet Library URL"
     }, {
@@ -34,15 +31,6 @@ end function
 function OnNodeReady()
     m.appInfo = m.applicationInfo@.GetAppInfo()
 
-    UpdateKeyValueList()
-
-    if m.appInfo.lib_version_latest = "N/A"
-        m.applicationInfo.ObserveFieldScoped("lib_version_latest", FuncName(OnAppInfoChanged))
-    end if
-end function
-
-function OnAppInfoChanged()
-    m.appInfo["lib_version_latest"] = m.applicationInfo.lib_version_latest
     UpdateKeyValueList()
 end function
 
