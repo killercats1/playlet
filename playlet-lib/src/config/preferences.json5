@@ -257,6 +257,10 @@
             enabled: true,
           },
           {
+            id: "shorts",
+            enabled: true,
+          },
+          {
             id: "popular",
             enabled: true,
           },

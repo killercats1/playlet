@@ -97,7 +97,9 @@ function OnRowItemSelected(index as object) as void
     end if
     rowItem = row.GetChild(rowItemIndex)
 
-    if rowItem.type = "video"
+    if rowItem.type = "video" and IsShortsRow(row)
+        PlayShortsFrom(row, rowItemIndex)
+    else if rowItem.type = "video"
         videoId = rowItem.videoId
         LogInfo("Play video: " + videoId)
         m.videoQueue.playVideo = rowItem
@@ -174,6 +176,36 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
     end if
 
     return options
+end function
+
+' The Home Shorts row plays like the Shorts tab: all its Shorts queued, Up/Down flips, endless.
+function IsShortsRow(row as object) as boolean
+    feedSources = row.feedSources
+    return IsArray(feedSources) and feedSources.Count() > 0 and feedSources[0].id = "inv_auth_shorts"
+end function
+
+function PlayShortsFrom(row as object, index as integer) as void
+    nodes = []
+    startIndex = 0
+    children = row.getChildren(-1, 0)
+    for i = 0 to children.Count() - 1
+        video = children[i]
+        if i = index
+            startIndex = nodes.Count()
+        end if
+        if video.type = "video" and not StringUtils.IsNullOrEmpty(video.videoId)
+            node = video.clone(false)
+            node.addFields({ isShort: true })
+            nodes.Push(node)
+        end if
+    end for
+    if nodes.Count() = 0 or startIndex >= nodes.Count()
+        return
+    end if
+    lastNode = nodes[nodes.Count() - 1]
+    lastNode.addFields({ shortsMore: "v:" + lastNode.videoId })
+    m.videoQueue.setQueueAndIndex = { videoNodes: nodes, index: startIndex }
+    m.videoQueue.play = true
 end function
 
 function OpenPlaylist(playlist as object)

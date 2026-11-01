@@ -439,6 +439,13 @@ namespace Http
                 return true
             end if
 
+            ' the Home row (unlike the Shorts tab) follows the "Disable Shorts" setting
+            if request.query.respectDisableShorts <> invalid and m.preferences["content_feed.disable_shorts"] = true
+                response.Json({ "error": "Shorts are disabled" })
+                response.http_code = 500
+                return true
+            end if
+
             onBehalfOfUser = request.query.activeIdentifyToken
             items = []
             seen = {}

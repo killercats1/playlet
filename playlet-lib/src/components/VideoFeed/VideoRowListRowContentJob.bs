@@ -237,6 +237,8 @@ function RemoveSingleFailedRow(error as dynamic, feedSource as object, feedSourc
     isError = isError or feedSource.id = "inv_popular"
     ' YouTube Music may refuse the sign-in, or an Invidious profile has no such endpoint: just drop the row
     isError = isError or feedSource.id = "music_recommended"
+    ' no Shorts, or Shorts disabled: no Shorts row
+    isError = isError or feedSource.id = "inv_auth_shorts"
     if not isError
         return false
     end if
