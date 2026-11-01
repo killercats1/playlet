@@ -11,6 +11,9 @@
         <!-- NOTE: "_author" not "author". See PlaylistContentNode.xml for explanation -->
         <field id="_author" type="string" />
         <field id="authorId" type="string" />
+        <!-- YouTube feedback tokens from the item's menu ("Not interested", "Don't recommend channel") -->
+        <field id="notInterestedToken" type="string" />
+        <field id="dontRecommendChannelToken" type="string" />
         <field id="isUpcoming" type="boolean" />
         <field id="lengthSeconds" type="integer" />
         <field id="lengthText" type="string" />

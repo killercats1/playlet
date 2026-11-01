@@ -427,6 +427,8 @@ namespace Locale
         OpenPlaylistChannel = "Open Playlist Channel"
         OpenVideoChannel = "Open Video Channel"
         VideoDetails = "Video details"
+        NotInterested = "Not interested"
+        DontRecommendChannel = "Don't recommend channel"
         RefreshHome = "Refresh Home"
         RefreshBookmarks = "Refresh Bookmarks"
         RemoveFromBookmarks = "Remove from %1 bookmarks"

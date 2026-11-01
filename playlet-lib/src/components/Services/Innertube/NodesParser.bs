@@ -467,6 +467,7 @@ namespace Innertube
             video["premiereTimestamp"] = premiereTimestamp
         end if
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -552,6 +553,7 @@ namespace Innertube
             video["premiereTimestamp"] = premiereTimestamp
         end if
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -649,6 +651,7 @@ namespace Innertube
             video["isUpcoming"] = true
             video["premiereTimestamp"] = premiereTimestamp
         end if
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -688,6 +691,7 @@ namespace Innertube
             "publishedText": publishedText
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -717,6 +721,7 @@ namespace Innertube
             "publishedText": ParseText(nodeData["publishedTimeText"])
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -766,6 +771,7 @@ namespace Innertube
             "videoInfo": videoInfo
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -832,6 +838,7 @@ namespace Innertube
             "isUpcoming": isUpcoming
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -864,6 +871,7 @@ namespace Innertube
             "videoThumbnails": ObjectUtils.Dig(nodeData, ["thumbnail", "thumbnails"])
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1211,6 +1219,7 @@ namespace Innertube
             "liveNow": liveNow
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1290,6 +1299,7 @@ namespace Innertube
             "isShort": true
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1382,6 +1392,7 @@ namespace Innertube
             "isShort": true
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1588,6 +1599,7 @@ namespace Innertube
             video["authorId"] = authorId
         end if
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1637,6 +1649,7 @@ namespace Innertube
             video["authorId"] = authorId
         end if
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1986,6 +1999,7 @@ namespace Innertube
             "lengthText": lengthText
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -2039,6 +2053,7 @@ namespace Innertube
             "lengthText": lengthText
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -2083,6 +2098,7 @@ namespace Innertube
             "lengthText": lengthText
         }
 
+        AddFeedbackTokens(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -2193,6 +2209,67 @@ namespace Innertube
             "title": title
             "items": []
         }
+    end function
+
+    ' YouTube's "Not interested" / "Don't recommend channel" feedback tokens from an item's menu (the TV
+    ' long-press menu, the web overflow menu), for Playlet's options menu. The menu labels pick them (English);
+    ' when no label matches, the first token is taken as "Not interested".
+    function AddFeedbackTokens(item as object, nodeData as object) as void
+        found = []
+        CollectFeedbackTokens(nodeData, found, "", 16)
+        if found.Count() = 0
+            return
+        end if
+        notInterested = ""
+        dontRecommend = ""
+        for each entry in found
+            menuLabel = LCase(entry.label)
+            if dontRecommend = "" and menuLabel.InStr("recommend channel") <> -1
+                dontRecommend = entry.token
+            else if notInterested = "" and menuLabel.InStr("not interested") <> -1
+                notInterested = entry.token
+            end if
+        end for
+        if notInterested = "" and dontRecommend = ""
+            notInterested = found[0].token
+        end if
+        if notInterested <> ""
+            item["notInterestedToken"] = notInterested
+        end if
+        if dontRecommend <> ""
+            item["dontRecommendChannelToken"] = dontRecommend
+        end if
+    end function
+
+    ' Every feedbackEndpoint token below data, with the label of the nearest menu item above it.
+    function CollectFeedbackTokens(data as dynamic, found as object, menuLabel as string, depth as integer) as void
+        if depth < 0
+            return
+        end if
+        if IsArray(data)
+            for each child in data
+                CollectFeedbackTokens(child, found, menuLabel, depth - 1)
+            end for
+            return
+        end if
+        if not IsAssociativeArray(data)
+            return
+        end if
+        ownLabel = ParseText(data["text"])
+        if ownLabel = "" and IsAssociativeArray(data["title"])
+            ownLabel = ValidString(data["title"]["content"])
+        end if
+        if ownLabel <> ""
+            menuLabel = ownLabel
+        end if
+        endpoint = data["feedbackEndpoint"]
+        if IsAssociativeArray(endpoint) and IsString(endpoint["feedbackToken"]) and endpoint["feedbackToken"] <> ""
+            found.Push({ token: endpoint["feedbackToken"], label: menuLabel })
+            return
+        end if
+        for each key in data
+            CollectFeedbackTokens(data[key], found, menuLabel, depth - 1)
+        end for
     end function
 
     function PushFeedItem(item as object, context as object) as void

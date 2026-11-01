@@ -20,6 +20,7 @@
         <function name="OpenChannel" />
         <function name="OpenVideoChannel" />
         <function name="OpenVideoDetails" />
+        <function name="SendFeedback" />
         <function name="OpenPlaylistChannel" />
         <function name="Refresh" />
     </interface>

@@ -1257,6 +1257,14 @@
         <translation>Video details</translation>
     </message>
     <message>
+        <source>Not interested</source>
+        <translation>Not interested</translation>
+    </message>
+    <message>
+        <source>Don&apos;t recommend channel</source>
+        <translation>Don&apos;t recommend channel</translation>
+    </message>
+    <message>
         <source>%1 likes</source>
         <translation>%1 likes</translation>
     </message>

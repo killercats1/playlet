@@ -39,6 +39,8 @@ namespace InvidiousContent
         ' NOTE: "_author" not "author". See PlaylistContentNode.xml for explanation.
         SetIfExists(node, "_author", item, "author")
         SetIfExists(node, "authorId", item, "authorId")
+        SetIfExists(node, "notInterestedToken", item, "notInterestedToken")
+        SetIfExists(node, "dontRecommendChannelToken", item, "dontRecommendChannelToken")
         SetIfExists(node, "lengthSeconds", item, "lengthSeconds")
         node.lengthText = VideoGetLengthText(item)
         node.liveNow = VideoIsLive(item)

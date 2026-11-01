@@ -153,6 +153,16 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.PlayVideo), m.videoQueue, "FuncPlayVideo", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.QueueVideo), m.videoQueue, "FuncAddToQueueVideo", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.VideoDetails), m.top, "OpenVideoDetails", [rowItem]))
+        ' YouTube feedback, when the feed item carried the tokens and a YouTube account is signed in
+        profile = m.top.profilesService.currentProfile
+        if profile <> invalid and profile.type = "youtube"
+            if not StringUtils.IsNullOrEmpty(rowItem.notInterestedToken)
+                options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.NotInterested), m.top, "SendFeedback", [rowItem, "notInterested"]))
+            end if
+            if not StringUtils.IsNullOrEmpty(rowItem.dontRecommendChannelToken)
+                options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.DontRecommendChannel), m.top, "SendFeedback", [rowItem, "channel"]))
+            end if
+        end if
 
         authorId = rowItem.authorId
         if not StringUtils.IsNullOrEmpty(authorId)
@@ -214,6 +224,37 @@ end function
 
 function OpenChannel(channel as object)
     ChannelUtils.Open(channel)
+end function
+
+' "Not interested" (kind "notInterested") or "Don't recommend channel" (kind "channel"): tells YouTube, and takes
+' the video (or every video of that channel in the row) off the screen right away.
+function SendFeedback(video as object, kind as string) as void
+    token = video.notInterestedToken
+    if kind = "channel"
+        token = video.dontRecommendChannelToken
+    end if
+    if StringUtils.IsNullOrEmpty(token)
+        return
+    end if
+    JobSystem.QueueJob(m.jobQueue, Jobs.FeedbackJob, {
+        token: token
+        profile: m.top.profilesService.currentProfile
+    }, JobSystem.CreateCallback())
+
+    row = video.getParent()
+    if row = invalid
+        return
+    end if
+    if kind = "channel" and not StringUtils.IsNullOrEmpty(video.authorId)
+        authorId = video.authorId
+        for each item in row.getChildren(-1, 0)
+            if item.hasField("authorId") and item.authorId = authorId
+                row.removeChild(item)
+            end if
+        end for
+    else
+        row.removeChild(video)
+    end if
 end function
 
 function OpenVideoDetails(video as object) as void
