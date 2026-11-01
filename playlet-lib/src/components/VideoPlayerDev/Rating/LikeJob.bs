@@ -1,0 +1,49 @@
+import "pkg:/components/ContentNode/ProfileContentAuthTokenUtils.bs"
+import "pkg:/components/Services/Innertube/Context.bs"
+import "pkg:/source/services/HttpClient.bs"
+
+' Likes, dislikes or clears the rating of a video for the signed-in YouTube account (the player's Like and
+' Dislike buttons). input: { videoId, action: "like" | "dislike" | "removelike", profile }
+@job("LikeJob")
+function ExecuteJob() as void
+    input = JobGetInput()
+    videoId = ValidString(input.videoId)
+    action = ValidString(input.action)
+    profile = input.profile
+
+    if videoId = "" or (action <> "like" and action <> "dislike" and action <> "removelike")
+        JobError("Invalid like request")
+        return
+    end if
+    if profile = invalid or profile.type <> "youtube"
+        JobError("Liking needs a YouTube account")
+        return
+    end if
+
+    auth = ProfileContentAuthTokenUtils.EnsureFreshAccessToken(profile)
+    if auth.state <> ProfileContentAuthTokenUtils.AccessTokenState.Ok
+        JobError("No usable access token to rate the video: " + auth.state)
+        return
+    end if
+
+    options = { accessToken: auth.token }
+    if not StringUtils.IsNullOrEmpty(auth.activeIdentifyToken)
+        options.onBehalfOfUser = auth.activeIdentifyToken
+    end if
+
+    deviceInfo = CreateObject("roDeviceInfo")
+    request = HttpClient.Post(`https://www.youtube.com/youtubei/v1/like/${action}?prettyPrint=false&alt=json`).JsonBody({
+        "context": Innertube.CreateContext(Innertube.ClientType.Tv, deviceInfo, options)
+        "target": { "videoId": videoId }
+    })
+    request.Headers(Innertube.CreateHeaders(Innertube.ClientType.Tv))
+    request.Header("Authorization", "Bearer " + auth.token)
+    request.Cancellation(JobGetCancellation())
+
+    response = request.Await()
+    if not response.IsSuccess()
+        JobError("Failed to rate the video: " + response.ErrorMessage())
+        return
+    end if
+    JobSuccess()
+end function

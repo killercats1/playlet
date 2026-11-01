@@ -949,11 +949,14 @@ namespace Tests
             m.assertEqual(m.Snap().nudgeCount, 1)
             m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> next
             m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> minimize
-            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> captions (rightmost)
+            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> captions
+            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> like
+            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> dislike
+            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> subscribe (rightmost)
             m.top.callFunc("TestKey", RemoteKeys.Right, true) ' clamped at the right end
             snap = m.Snap()
             m.assertEqual(snap.nudgeCount, 2)
-            m.assertEqual(snap.focusedButton, 3, "the clamp held the highlight at the end")
+            m.assertEqual(snap.focusedButton, 6, "the clamp held the highlight at the end")
         end function
 
         ' Down at the bar tier (the bottom, and the default on reveal) is a no-op: consumed, no nudge.
@@ -1086,11 +1089,11 @@ namespace Tests
                 classified[name] = "controller"
             end for
             ' cached child nodes / timers / animations / reusable helpers (structure, not state).
-            for each name in ["chrome", "titleLabel", "secondaryTitleLabel", "clock", "bifDisplay", "trickPlayBar", "spinner", "largePause", "buttonRow", "fullScreenHint", "autoHide", "transportTimer", "liveBadgeHold", "liveEdgeClock", "fullScreenHintTimer", "chromeFadeIn", "chromeFadeOut", "minimize", "nowDateTime"]
+            for each name in ["chrome", "titleLabel", "secondaryTitleLabel", "clock", "bifDisplay", "trickPlayBar", "spinner", "largePause", "buttonRow", "fullScreenHint", "autoHide", "transportTimer", "liveBadgeHold", "liveEdgeClock", "fullScreenHintTimer", "chromeFadeIn", "chromeFadeOut", "minimize", "nowDateTime", "captionsOverlay", "upNextPanel"]
                 classified[name] = "node"
             end for
             ' in-flight job handles.
-            for each name in ["videoContentJob", "sponsorBlockSegmentsJob", "markVideoWatchedJob"]
+            for each name in ["videoContentJob", "sponsorBlockSegmentsJob", "markVideoWatchedJob", "likeJob", "subscribeJob"]
                 classified[name] = "job"
             end for
             ' STATE AXES — discrete coordinator state; each needs its transitions covered by a seam test.
@@ -1098,7 +1101,7 @@ namespace Tests
                 classified[name] = "axis"
             end for
             ' flags / scratch — one-shot latches and counters with a single consuming path.
-            for each name in ["onCloseCalled", "ignoreNextFinished", "videoPlayedSuccessfully", "firstFrameSeen", "showFullScreenHint", "repauseAfterSeek", "loadingSetSeekMs", "watchTimeMarker", "reportWatchTime", "errorDialogNode", "lastCommitSeq", "lastFinishSeq", "liveAstSeconds", "liveFallbackEdgeMs", "liveFallbackAtSeconds", "liveBadgeHoldActive"]
+            for each name in ["onCloseCalled", "ignoreNextFinished", "videoPlayedSuccessfully", "firstFrameSeen", "showFullScreenHint", "repauseAfterSeek", "loadingSetSeekMs", "watchTimeMarker", "reportWatchTime", "errorDialogNode", "lastCommitSeq", "lastFinishSeq", "liveAstSeconds", "liveFallbackEdgeMs", "liveFallbackAtSeconds", "liveBadgeHoldActive", "captionsEnabled", "upNextOpen", "likeState", "subscriptionStatusFetched"]
                 classified[name] = "flag"
             end for
             ' NOT coordinator state — node-scope + test-environment entries, pinned EXPLICITLY (no hidden

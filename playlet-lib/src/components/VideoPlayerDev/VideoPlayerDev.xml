@@ -31,6 +31,8 @@
         <field id="maxRect" type="rect2D" value="[0,0,1280,720]" />
         <field id="close" type="boolean" alwaysNotify="true" />
         <field id="setSeek" type="float" alwaysNotify="true" />
+        <!-- whether the account is subscribed to this video's channel; set by the subscribe jobs -->
+        <field id="isSubscribed" type="boolean" />
         <function name="PlayWithContent" />
     </interface>
     <!-- Init() lives in its own file so VideoPlayerDev.bs (the coordinator logic) has no Init and is importable by

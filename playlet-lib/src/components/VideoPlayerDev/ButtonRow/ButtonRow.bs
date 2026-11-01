@@ -9,19 +9,23 @@ const SCREEN_CENTER_X = 640
 const TRACKBAR_RIGHT_X = 1212
 
 function Init()
-    ' Focus order MUST match PlayerCoordinatorLogic.PlayerButton (playPause=0, next=1, minimize=2, captions=3).
+    ' Focus order MUST match PlayerCoordinatorLogic.PlayerButton (playPause=0, next=1, minimize=2, captions=3,
+    ' like=4, dislike=5, subscribe=6).
     m.buttons = [
         m.top.findNode("PlayPauseButton")
         m.top.findNode("NextButton")
         m.top.findNode("MinimizeButton")
         m.top.findNode("CaptionsButton")
+        m.top.findNode("LikeButton")
+        m.top.findNode("DislikeButton")
+        m.top.findNode("SubscribeButton")
     ]
     m.centerCluster = m.top.findNode("CenterCluster")
     m.rightCluster = m.top.findNode("RightCluster")
     LayoutClusters()
     m.top.buttonCount = m.buttons.Count() ' coordinator reads this to clamp focus
 
-    for each field in ["transportMode", "rowFocused", "focusedIndex", "playing", "captionsOn"]
+    for each field in ["transportMode", "rowFocused", "focusedIndex", "playing", "captionsOn", "likeState", "subscribed"]
         m.top.ObserveField(field, FuncName(Repaint))
     end for
     m.top.ObserveField("nudge", FuncName(OnNudge))
@@ -66,6 +70,9 @@ function Repaint() as void
 
     m.buttons[0].toggleState = not m.top.playing ' toggleState false = play icon, true = pause icon
     m.buttons[3].toggleState = m.top.captionsOn ' toggleState true = CC on icon, false = CC off icon
+    m.buttons[4].toggleState = m.top.likeState = 1 ' filled thumb while liked
+    m.buttons[5].toggleState = m.top.likeState = 2 ' filled thumb while disliked
+    m.buttons[6].toggleState = m.top.subscribed ' check mark while subscribed
 
     for i = 0 to m.buttons.Count() - 1
         m.buttons[i].focused = m.top.rowFocused and i = m.top.focusedIndex

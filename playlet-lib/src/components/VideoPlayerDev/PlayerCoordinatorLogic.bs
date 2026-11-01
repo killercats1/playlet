@@ -51,6 +51,9 @@ namespace PlayerCoordinatorLogic
         NextVideo = 1
         Minimize = 2
         Captions = 3
+        Like = 4
+        Dislike = 5
+        Subscribe = 6
     end enum
 
     ' The two focus targets above/at the trackbar: the bar itself (Left/Right scrub, the cursor grows) and the

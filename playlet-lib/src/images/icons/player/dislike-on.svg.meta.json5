@@ -1,0 +1,11 @@
+{
+  inputHash: '2db240ad0a0080332d792c4ee6e008c7',
+  outputs: [
+    {
+      outputFilePath: 'images/icons/player/dislike-on.png',
+      outputHash: 'adcd84c4af9a61e809c81ad826ecdaa8',
+      width: 63,
+      height: 63,
+    },
+  ],
+}
