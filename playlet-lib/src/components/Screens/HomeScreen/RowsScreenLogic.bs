@@ -12,7 +12,7 @@ const RECOMMENDED_FEED_SOURCE_ID = "inv_auth_recommended"
 ' the row list moves down to make room for the topic chips while they show
 const ROWLIST_Y = 50
 const ROWLIST_Y_WITH_CHIPS = 90
-' coming back to Home after this long reloads it (like YouTube, so the feed isn't hours old)
+' coming back to a row screen (Home, Subscriptions, Library...) after this long reloads it (like YouTube, so the feed isn't hours old)
 const STALE_AFTER_SECONDS = 1800
 
 function OnNodeReady()
@@ -50,14 +50,14 @@ function OnHomeLayoutChange() as void
 end function
 
 function RefreshIfStale() as void
-    if not m.top.useHomeLayout or not IsInt(m.loadedAt)
+    if not IsInt(m.loadedAt)
         return
     end if
     now = CreateObject("roDateTime").AsSeconds()
     if now - m.loadedAt < STALE_AFTER_SECONDS
         return
     end if
-    LogInfo("Home was loaded", now - m.loadedAt, "seconds ago: refreshing")
+    LogInfo("Rows were loaded", now - m.loadedAt, "seconds ago: refreshing")
     m.loadedAt = now
     m.rowList@.Refresh()
 end function

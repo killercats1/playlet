@@ -341,11 +341,12 @@ namespace Http
                 end if
             end if
 
-            ' The first page comes from the home page shared with the Home shelf rows (see HomeFeeds)
+            ' The first page is always a fresh home page (so Refresh Home refreshes), kept for the Home shelf rows
+            ' loading right after it (see HomeFeeds)
             if options.DoesExist("continuation")
                 result = InnertubeService.GetHome(options)
             else
-                result = m.HomeFeeds(options)
+                result = m.HomeFeeds(options, true)
             end if
             if result.error <> invalid
                 response.Json(result)
@@ -442,11 +443,11 @@ namespace Http
         ' the first shelf that has more to load.
         ' The account's home page (all its shelves), kept for a short while: Recommended and the Home shelf rows
         ' load at the same time and must come from the same page (the home page changes on every load).
-        function HomeFeeds(options as object) as object
+        function HomeFeeds(options as object, fresh = false as boolean) as object
             cacheKey = `${ValidString(options.accessToken)}|${ValidString(options.onBehalfOfUser)}|${ValidBool(options.disableShorts)}`
             now = CreateObject("roDateTime").AsSeconds()
             cache = m.homeCache
-            if IsAssociativeArray(cache) and cache.key = cacheKey and now - cache.savedAt <= HOME_CACHE_SECONDS
+            if not fresh and IsAssociativeArray(cache) and cache.key = cacheKey and now - cache.savedAt <= HOME_CACHE_SECONDS
                 return { feeds: cache.feeds }
             end if
             result = InnertubeService.GetHome(options)

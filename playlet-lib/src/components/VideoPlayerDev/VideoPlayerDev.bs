@@ -1027,16 +1027,20 @@ function CycleSleepTimer() as void
         ArmAutoHide()
         return
     end if
+    ' the next step after the one picked (not after the minutes left: those shrink, and the same step came back)
     steps = [15, 30, 60, 120]
-    left = SleepTimerMinutesLeft()
+    chosen = 0
+    if SleepTimerMinutesLeft() > 0
+        chosen = ValidInt(m.videoQueue.sleepTimerMinutes)
+    end if
     minutes = 0
     for each stepMinutes in steps
-        if stepMinutes > left
+        if stepMinutes > chosen
             minutes = stepMinutes
             exit for
         end if
     end for
-    if minutes = 0 and left > 0
+    if minutes = 0 and chosen > 0
         ' past the last step: stop at the end of this video
         m.videoQueue.sleepTimerMinutes = 0
         m.videoQueue.sleepAfterVideo = true
@@ -1345,9 +1349,10 @@ function OnVideoState(event as object) as void
 
     if state = VideoState.Playing
         ' first frame -> the module's ready gate opens; drop the loading overlay.
+        ' the picked speed, also after a stream retry or a resume (cheap: only set when it differs)
+        ApplyPlaybackSpeed()
         if not m.firstFrameSeen
             m.firstFrameSeen = true
-            ApplyPlaybackSpeed()
             m.transport.OnReady()
             m.spinner.mode = SpinMode.Off
             LogInfo("first frame: ready=true, loading overlay off")
