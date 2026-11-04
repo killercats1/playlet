@@ -158,10 +158,10 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
         ' YouTube feedback, when the feed item carried the tokens and a YouTube account is signed in
         profile = m.top.profilesService.currentProfile
         if profile <> invalid and profile.type = "youtube"
-            if not StringUtils.IsNullOrEmpty(rowItem.notInterestedToken)
-                options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.NotInterested), m.top, "SendFeedback", [rowItem, "notInterested"]))
-            end if
-            if not StringUtils.IsNullOrEmpty(rowItem.dontRecommendChannelToken)
+            ' always offered: YouTube is told when the feed item carried its token (the TV feeds often don't), and
+            ' Playlet hides the video/channel from its own feeds either way
+            options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.NotInterested), m.top, "SendFeedback", [rowItem, "notInterested"]))
+            if not StringUtils.IsNullOrEmpty(rowItem.authorId)
                 options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.DontRecommendChannel), m.top, "SendFeedback", [rowItem, "channel"]))
             end if
             ' rows of the account's lists offer taking the video out of that list
@@ -245,12 +245,9 @@ end function
 ' "Not interested" (kind "notInterested") or "Don't recommend channel" (kind "channel"): tells YouTube, and takes
 ' the video (or every video of that channel in the row) off the screen right away.
 function SendFeedback(video as object, kind as string) as void
-    token = video.notInterestedToken
+    token = ValidString(video.notInterestedToken)
     if kind = "channel"
-        token = video.dontRecommendChannelToken
-    end if
-    if StringUtils.IsNullOrEmpty(token)
-        return
+        token = ValidString(video.dontRecommendChannelToken)
     end if
     authorId = ""
     if video.hasField("authorId")

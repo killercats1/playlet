@@ -42,6 +42,10 @@ namespace Innertube
                 context.currentFeed = invalid
             end if
         end if
+        ' the continuation for more shelves of the page, on the first feed (see the backend's AllShelfFeeds)
+        if IsString(context.sectionContinuation) and context.feeds.Count() > 0
+            context.feeds[0]["sectionContinuation"] = context.sectionContinuation
+        end if
         return context.feeds
     end function
 

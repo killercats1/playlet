@@ -107,6 +107,7 @@ function Initialize()
     m.likeStatusFetched = false
     ' the autoplay countdown dialog while it shows
     m.upNextDialog = invalid
+    m.countdownTimer = invalid
     ' Watch later button: the save request in flight, and whether this video was saved
     m.watchLaterJob = invalid
     m.watchLaterSaved = false
@@ -932,6 +933,15 @@ function CyclePlaybackSpeed() as void
         RegistryUtils.Write(RegistryUtils.PLAYBACK_SPEED, nextSpeed.ToStr())
     end if
     ApplyPlaybackSpeed()
+    ' some Rokus only take a new speed when the stream (re)starts: re-seek to where we are, still playing
+    content = m.top.content
+    if m.firstFrameSeen and not (content <> invalid and content.Live = true)
+        posMs = CInt(ValidFloat(m.top.position) * 1000)
+        if posMs > 0
+            m.transport.ForceIdleSeek(posMs, true)
+            ApplyTransport()
+        end if
+    end if
     UpdateSpeedLabel(true)
     ArmAutoHide()
 end function
@@ -2140,7 +2150,28 @@ function ShowAutoplayCountdown() as boolean
     end if
     m.upNextDialog = dialog
     dialog.observeFieldScoped("wasClosed", FuncName(OnAutoplayCountdownClosed))
+    ' the dialog's own countdown doesn't run on every Roku: this timer plays the video when it's up
+    if m.countdownTimer = invalid
+        m.countdownTimer = m.top.createChild("Timer")
+        m.countdownTimer.repeat = false
+        m.countdownTimer.observeFieldScoped("fire", FuncName(OnAutoplayCountdownTimer))
+    end if
+    m.countdownTimer.duration = 8
+    m.countdownTimer.control = "start"
     return true
+end function
+
+function OnAutoplayCountdownTimer() as void
+    dialog = m.upNextDialog
+    if dialog = invalid or m.onCloseCalled = true
+        return
+    end if
+    m.upNextDialog = invalid
+    dialog.unobserveFieldScoped("wasClosed")
+    dialog.close = true
+    if not VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences)
+        ClosePlayer()
+    end if
 end function
 
 ' The related video autoplay would play (VideoQueueUtils.PlayNext's pick), or invalid when it wouldn't autoplay.
@@ -2160,6 +2191,9 @@ function OnAutoplayCountdownClosed(event as object) as void
     dialog.unobserveFieldScoped("wasClosed")
     if m.upNextDialog <> invalid and dialog.isSameNode(m.upNextDialog)
         m.upNextDialog = invalid
+    end if
+    if m.countdownTimer <> invalid
+        m.countdownTimer.control = "stop"
     end if
     if m.onCloseCalled = true
         return
@@ -2245,6 +2279,10 @@ function OnClose() as void
         m.upNextDialog.unobserveFieldScoped("wasClosed")
         m.upNextDialog.close = true
         m.upNextDialog = invalid
+    end if
+    if m.countdownTimer <> invalid
+        m.countdownTimer.control = "stop"
+        m.countdownTimer.unobserveFieldScoped("fire")
     end if
 
     if m.sponsorBlockSegmentsJob <> invalid

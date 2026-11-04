@@ -18,7 +18,8 @@ function ExecuteJob() as void
         FeedFilters.Remember("video", ValidString(input.videoId))
     end if
     if token = ""
-        JobError("No feedback token")
+        ' YouTube sent no feedback token with this item: hidden in Playlet only
+        JobSuccess()
         return
     end if
     if profile = invalid or profile.type <> "youtube"

@@ -297,14 +297,20 @@ function OnPlayPlaylist() as void
     m.loadingPlaylistIndex = playlistIndex
     m.loadingPlaylistOp = "play"
     m.loadingPlaylistShuffle = playPlaylist.shuffle = true
+    ' a mix (RD...) is endless: play as soon as its first page is in, instead of loading every page first
+    m.loadingPlaylistIsMix = ValidString(playlistNode.playlistId).StartsWith("RD")
 
-    if playlistNode.loadState = FeedLoadState.Loaded
+    if playlistNode.loadState = FeedLoadState.Loaded or (m.loadingPlaylistIsMix and playlistNode.loadState = FeedLoadState.LoadedPage)
         OnPlaylistLoadStateChange()
         return
     end if
 
     playlistNode.ObserveFieldScoped("loadState", FuncName(OnPlaylistLoadStateChange))
-    playlistNode@.LoadPlaylistAll(m.top.invidious, m.top.jobQueue)
+    if m.loadingPlaylistIsMix
+        playlistNode@.LoadPlaylistPage(m.top.invidious, m.top.jobQueue)
+    else
+        playlistNode@.LoadPlaylistAll(m.top.invidious, m.top.jobQueue)
+    end if
 end function
 
 function OnPlaylistLoadStateChange() as void
@@ -319,9 +325,10 @@ function OnPlaylistLoadStateChange() as void
         return
     end if
 
-    if loadState <> FeedLoadState.Loaded
+    if loadState <> FeedLoadState.Loaded and not (m.loadingPlaylistIsMix = true and loadState = FeedLoadState.LoadedPage)
         return
     end if
+    m.loadingPlaylistIsMix = false
 
     playlistNode = m.loadingPlaylist
     playlistIndex = m.loadingPlaylistIndex
@@ -501,6 +508,7 @@ function OnAddToQueuePlaylist() as void
 
     m.loadingPlaylist = playlistNode
     m.loadingPlaylistOp = "queue"
+    m.loadingPlaylistIsMix = false
 
     if playlistNode.loadState = FeedLoadState.Loaded
         OnPlaylistLoadStateChange()

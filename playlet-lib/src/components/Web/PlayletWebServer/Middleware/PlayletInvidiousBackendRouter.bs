@@ -450,11 +450,41 @@ namespace Http
             if not fresh and IsAssociativeArray(cache) and cache.key = cacheKey and now - cache.savedAt <= HOME_CACHE_SECONDS
                 return { feeds: cache.feeds }
             end if
-            result = InnertubeService.GetHome(options)
+            result = m.AllShelfFeeds("FEwhat_to_watch", options)
             if result.error = invalid and IsArray(result.feeds) and result.feeds.Count() > 0
                 m.homeCache = { key: cacheKey, savedAt: now, feeds: result.feeds }
             end if
             return result
+        end function
+
+        ' A TV page with all its shelves: the first load only has the top few, the rest come with the page's
+        ' "more shelves" continuation (followed up to twice).
+        function AllShelfFeeds(browseId as string, options as object) as object
+            result = InnertubeService.GetBrowseAuthenticatedPage(browseId, options)
+            if result.error <> invalid or not IsArray(result.feeds) or result.feeds.Count() = 0
+                return result
+            end if
+            feeds = []
+            feeds.Append(result.feeds)
+            more = ValidString(result.feeds[0].sectionContinuation)
+            pages = 0
+            while more <> "" and pages < 2 and feeds.Count() < 12
+                pages += 1
+                pageOptions = {}
+                pageOptions.Append(options)
+                pageOptions.continuation = more
+                page = InnertubeService.GetBrowseAuthenticatedPage(browseId, pageOptions)
+                if page.error <> invalid or not IsArray(page.feeds) or page.feeds.Count() = 0
+                    exit while
+                end if
+                feeds.Append(page.feeds)
+                nextMore = ValidString(page.feeds[0].sectionContinuation)
+                if nextMore = more
+                    exit while
+                end if
+                more = nextMore
+            end while
+            return { feeds: feeds }
         end function
 
         ' One of YouTube's own home shelves after the first ("Because you watched...", a channel's new videos,
@@ -567,7 +597,7 @@ namespace Http
             if IsAssociativeArray(cache) and cache.key = cacheKey and now - cache.savedAt <= HOME_CACHE_SECONDS
                 feeds = cache.feeds
             else
-                result = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_" + topic, options)
+                result = m.AllShelfFeeds("FEtopics_" + topic, options)
                 if result.error <> invalid
                     response.Json(result)
                     response.http_code = 500
@@ -713,6 +743,11 @@ namespace Http
                         for each item in feed.items
                             if IsAssociativeArray(item) and item.type = "channel" and IsString(item.authorId) and not seen.DoesExist(item.authorId)
                                 seen[item.authorId] = true
+                                ' these pages don't say how many videos a channel has: no "0 videos" on the tile
+                                if ValidInt(item.videoCount) <= 0
+                                    item["videoCount"] = -1
+                                    item.Delete("videoCountText")
+                                end if
                                 channels.Push(item)
                             end if
                         end for

@@ -258,6 +258,8 @@ namespace Innertube
 
         continuation = ObjectUtils.Dig(nodeData, ["continuations", 0, "nextContinuationData", "continuation"])
         if IsString(continuation)
+            ' also kept apart: the first shelf's own continuation can replace it on the feed
+            context.sectionContinuation = continuation
             if not StringUtils.IsNullOrEmpty(context.currentFeed.continuation)
                 StartNewFeed("", context)
             end if
@@ -1421,8 +1423,12 @@ namespace Innertube
         return nodeData["content"]
     end function
 
-    function ParseTvSurfaceContentRenderer(nodeData as object, _context as object) as object
-        ' TODO: handle tvSurfaceContentRenderer.continuation
+    function ParseTvSurfaceContentRenderer(nodeData as object, context as object) as object
+        ' more shelves of the page (Home, topic pages)
+        continuation = ObjectUtils.Dig(nodeData, ["continuation", "nextContinuationData", "continuation"])
+        if IsString(continuation) and continuation <> "" and not IsString(context.sectionContinuation)
+            context.sectionContinuation = continuation
+        end if
         return nodeData["content"]
     end function
 
