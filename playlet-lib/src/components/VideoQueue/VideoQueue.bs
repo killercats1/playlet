@@ -296,6 +296,7 @@ function OnPlayPlaylist() as void
     m.loadingPlaylist = playlistNode
     m.loadingPlaylistIndex = playlistIndex
     m.loadingPlaylistOp = "play"
+    m.loadingPlaylistShuffle = playPlaylist.shuffle = true
 
     if playlistNode.loadState = FeedLoadState.Loaded
         OnPlaylistLoadStateChange()
@@ -339,6 +340,29 @@ function OnPlaylistLoadStateChange() as void
     for i = 0 to videoNodes.Count() - 1
         videoNodes[i] = videoNodes[i].clone(false)
     end for
+
+    ' Shuffle play: a random order, from the first of it
+    if playlistOp = "play" and m.loadingPlaylistShuffle = true
+        m.loadingPlaylistShuffle = false
+        for i = videoNodes.Count() - 1 to 1 step -1
+            j = Rnd(i + 1) - 1
+            swap = videoNodes[i]
+            videoNodes[i] = videoNodes[j]
+            videoNodes[j] = swap
+        end for
+        playlistIndex = 0
+        queueCount = m.content.getChildCount()
+        index = m.top.index + 1
+        if index >= queueCount
+            m.content.appendChildren(videoNodes)
+        else
+            m.content.insertChildren(videoNodes, index)
+        end if
+        m.top.index = index
+        RemovePlayer()
+        m.top.play = true
+        return
+    end if
 
     if playlistOp = "play"
         playlistIndex = MathUtils.Clamp(playlistIndex, 0, videoNodes.Count() - 1)

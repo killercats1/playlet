@@ -196,6 +196,9 @@ function OnNodeReady()
 
     if m.captionsOverlay <> invalid
         m.captionsOverlay.jobQueue = m.jobQueue
+        if m.preferences <> invalid and IsString(m.preferences["playback.caption_size"])
+            m.captionsOverlay.captionSize = m.preferences["playback.caption_size"]
+        end if
         m.captionsOverlay.chrome = m.chrome
         m.captionsOverlay.fullscreen = m.container.fullscreen
         m.captionsOverlay.enabled = m.captionsEnabled

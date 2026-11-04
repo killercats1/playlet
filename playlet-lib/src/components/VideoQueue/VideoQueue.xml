@@ -48,6 +48,7 @@
         <function name="FuncPlayPlaylist" />
         <function name="FuncAddToQueueVideo" />
         <function name="FuncPlayNextVideo" />
+        <function name="FuncShufflePlaylist" />
         <function name="FuncAddToQueuePlaylist" />
     </interface>
     <children>

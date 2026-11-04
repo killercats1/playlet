@@ -10,6 +10,8 @@
         <field id="chrome" type="node" />
         <field id="enabled" type="boolean" value="false" onChange="OnEnabledChange" />
         <field id="fullscreen" type="boolean" value="true" onChange="Refresh" />
+        <!-- the "Caption size" setting: small, medium, large or extra_large -->
+        <field id="captionSize" type="string" value="medium" onChange="OnCaptionSizeChange" />
     </interface>
     <children>
         <Timer id="tick" duration="0.2" repeat="true" />

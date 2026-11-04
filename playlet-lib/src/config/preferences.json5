@@ -28,6 +28,19 @@
         svelteComponent: "EditQualityControl",
       },
       {
+        displayText: "Caption size",
+        key: "playback.caption_size",
+        description: "Text size of the captions shown with the player's CC button.",
+        type: "radio",
+        defaultValue: "medium",
+        options: [
+          { displayText: "Small", value: "small" },
+          { displayText: "Medium", value: "medium" },
+          { displayText: "Large", value: "large" },
+          { displayText: "Extra large", value: "extra_large" },
+        ],
+      },
+      {
         displayText: "Disable auto-dubbed audio",
         key: "playback.disable_auto_dubbed",
         description: "Remove AI-generated dubbed audio tracks.",

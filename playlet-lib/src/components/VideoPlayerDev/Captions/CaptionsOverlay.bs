@@ -29,6 +29,20 @@ function Init()
     ResetTrack()
 end function
 
+function OnCaptionSizeChange() as void
+    sizes = { small: 24, medium: 30, large: 38, extra_large: 46 }
+    size = sizes[m.top.captionSize]
+    if size = invalid
+        size = 30
+    end if
+    font = CreateObject("roSGNode", "Font")
+    font.uri = "pkg:/fonts/Roboto-Regular.ttf"
+    font.size = size
+    m.label.font = font
+    ' re-layout the cue on screen at the new size
+    m.shownText = invalid
+end function
+
 function ResetTrack() as void
     if m.job <> invalid
         m.job.cancel = true

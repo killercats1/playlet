@@ -184,6 +184,7 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
         end if
     else if rowItem.type = "playlist"
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.PlayPlaylist), m.videoQueue, "FuncPlayPlaylist", [rowItem, 0]))
+        options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.ShufflePlaylist), m.videoQueue, "FuncShufflePlaylist", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.QueuePlaylist), m.videoQueue, "FuncAddToQueuePlaylist", [rowItem]))
 
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.OpenPlaylist), m.top, "OpenPlaylist", [rowItem]))

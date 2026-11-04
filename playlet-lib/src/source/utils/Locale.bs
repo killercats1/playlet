@@ -334,6 +334,12 @@ namespace Locale
         ResetHiddenVideos = "Reset Not interested"
         ResetHiddenVideosDescription = "Let videos and channels you marked Not interested or Don't recommend show up in Playlet's feeds again. This doesn't change what YouTube remembers."
         HiddenVideosReset = "Not interested list cleared."
+        CaptionSize = "Caption size"
+        CaptionSizeDescription = "Text size of the captions shown with the player's CC button."
+        Small = "Small"
+        Medium = "Medium"
+        Large = "Large"
+        ExtraLarge = "Extra large"
     end enum
 
     @locale
@@ -455,6 +461,7 @@ namespace Locale
         RemovedFromWatchLater = "Removed from Watch later"
         RemovedFromLikedVideos = "Removed from Liked videos"
         RemovedFromHistory = "Removed from watch history"
+        ShufflePlaylist = "Shuffle play"
     end enum
 
     @locale

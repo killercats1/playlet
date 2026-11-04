@@ -1620,5 +1620,33 @@
         <source>Removed from watch history</source>
         <translation>Removed from watch history</translation>
     </message>
+    <message>
+        <source>Shuffle play</source>
+        <translation>Shuffle play</translation>
+    </message>
+    <message>
+        <source>Caption size</source>
+        <translation>Caption size</translation>
+    </message>
+    <message>
+        <source>Text size of the captions shown with the player's CC button.</source>
+        <translation>Text size of the captions shown with the player&apos;s CC button.</translation>
+    </message>
+    <message>
+        <source>Small</source>
+        <translation>Small</translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation>Medium</translation>
+    </message>
+    <message>
+        <source>Large</source>
+        <translation>Large</translation>
+    </message>
+    <message>
+        <source>Extra large</source>
+        <translation>Extra large</translation>
+    </message>
 </context>
 </TS>

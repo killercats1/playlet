@@ -22,6 +22,9 @@ function Init()
     m.playButton = m.top.findNode("playButton")
     m.channelButton = m.top.findNode("channelButton")
     m.watchLaterButton = m.top.findNode("watchLaterButton")
+    m.subscribeButton = m.top.findNode("subscribeButton")
+    m.subscribeJob = invalid
+    m.subscriptionChecked = ""
     m.detailsJob = invalid
     m.watchLaterJob = invalid
     m.authorId = ""
@@ -44,6 +47,8 @@ function OnNodeReady()
     m.playButton.ObserveField("buttonSelected", FuncName(OnPlaySelected))
     m.channelButton.ObserveField("buttonSelected", FuncName(OnChannelSelected))
     m.watchLaterButton.ObserveField("buttonSelected", FuncName(OnWatchLaterSelected))
+    m.subscribeButton.ObserveField("buttonSelected", FuncName(OnSubscribeSelected))
+    UpdateSubscribeButton()
 
     LoadDetails()
 end function
@@ -129,7 +134,58 @@ function SetAuthorId(authorId as string) as void
     hasChannel = authorId <> ""
     m.channelButton.visible = hasChannel
     m.channelButton.focusable = hasChannel
+    UpdateSubscribeButton()
+end function
+
+' Subscribe / Unsubscribe for the video's channel, once it's known; asks whether the account already follows it.
+function UpdateSubscribeButton() as void
+    profile = m.top.profilesService.currentProfile
+    show = m.authorId <> "" and profile <> invalid
+    m.subscribeButton.visible = show
+    m.subscribeButton.focusable = show
+    OnIsSubscribedChange()
+    if show and m.subscriptionChecked <> m.authorId
+        m.subscriptionChecked = m.authorId
+        JobSystem.QueueJob(m.top.jobQueue, Jobs.FetchSubscriptionStatusJob, {
+            channelView: m.top
+            ucid: m.authorId
+            profile: profile
+            invidious: m.top.invidious
+        }, JobSystem.CreateCallback())
+    end if
     UpdateButtonLayout()
+end function
+
+function OnIsSubscribedChange() as void
+    if m.subscribeButton = invalid
+        return
+    end if
+    if m.top.isSubscribed
+        m.subscribeButton.text = Tr(Locale.Buttons.Unsubscribe)
+    else
+        m.subscribeButton.text = Tr(Locale.Buttons.Subscribe)
+    end if
+    if m.subscribeButton.visible
+        UpdateButtonLayout()
+    end if
+end function
+
+function OnSubscribeSelected() as void
+    profile = m.top.profilesService.currentProfile
+    if m.authorId = "" or profile = invalid
+        return
+    end if
+    if m.subscribeJob <> invalid
+        m.subscribeJob.cancel = true
+    end if
+    m.subscribeJob = JobSystem.CreateCallback()
+    JobSystem.QueueJob(m.top.jobQueue, Jobs.SubscribeJob, {
+        channelView: m.top
+        invidious: m.top.invidious
+        ucid: m.authorId
+        subscribe: not m.top.isSubscribed
+        profile: profile
+    }, m.subscribeJob)
 end function
 
 ' The visible buttons in a row, left to right, with Left/Right between neighbors.
@@ -137,6 +193,9 @@ function UpdateButtonLayout() as void
     buttons = [m.playButton]
     if m.channelButton.visible
         buttons.Push(m.channelButton)
+    end if
+    if m.subscribeButton.visible
+        buttons.Push(m.subscribeButton)
     end if
     if m.watchLaterButton.visible
         buttons.Push(m.watchLaterButton)
@@ -148,7 +207,7 @@ function UpdateButtonLayout() as void
             if IsArray(links)
                 kept = []
                 for each link in links
-                    if link.fromNode = invalid or not (link.fromNode.isSameNode(m.playButton) or link.fromNode.isSameNode(m.channelButton) or link.fromNode.isSameNode(m.watchLaterButton))
+                    if link.fromNode = invalid or not (link.fromNode.isSameNode(m.playButton) or link.fromNode.isSameNode(m.channelButton) or link.fromNode.isSameNode(m.subscribeButton) or link.fromNode.isSameNode(m.watchLaterButton))
                         kept.Push(link)
                     end if
                 end for
