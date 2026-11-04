@@ -43,6 +43,7 @@ function OnNodeReady()
         m.preferences.observeFieldScoped("misc.home_screen_layout", FuncName(OnHomeLayoutChange))
         ' the "Updated to vX" card: when the first videos show up (Home is on screen then)
         m.rowList.observeFieldScoped("someContentReady", FuncName(OnSomeContentReady))
+        ShowUpdatedCard()
         ' an expired YouTube sign-in leaves Home empty: say so (also when it expires later)
         profilesService = m.rowList.profilesService
         if profilesService <> invalid
@@ -100,8 +101,20 @@ function ShowUpdatedCard() as void
         return
     end if
     videoQueue = m.rowList.videoQueue
-    if videoQueue = invalid or videoQueue.notifications = invalid
-        ' not wired up yet: try again on the next focus
+    ' the launcher's loading screen covers everything (the card would play out underneath it): wait it out
+    loadingIndicator = m.global.loadingIndicator
+    loadingShows = loadingIndicator <> invalid and loadingIndicator.visible = true
+    if loadingShows or videoQueue = invalid or videoQueue.notifications = invalid
+        if m.updatedCardTimer = invalid
+            m.updatedCardTimer = m.top.createChild("Timer")
+            m.updatedCardTimer.duration = 1
+            m.updatedCardTimer.repeat = false
+            m.updatedCardTimer.observeFieldScoped("fire", FuncName(ShowUpdatedCard))
+        end if
+        m.updatedCardTries = ValidInt(m.updatedCardTries) + 1
+        if m.updatedCardTries <= 60
+            m.updatedCardTimer.control = "start"
+        end if
         return
     end if
     m.updatedCardDone = true

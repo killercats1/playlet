@@ -1,3 +1,3 @@
 ' Shown on the "Updated to vX" card the first time Home opens after an update. One short line, updated with
 ' each release.
-const WHATS_NEW = "You're seeing this card, so update notes work now. Last updates: a message when your sign-in expires."
+const WHATS_NEW = "You're seeing this card, so update notes work now. It waits for the loading screen to finish."
