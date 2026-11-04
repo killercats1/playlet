@@ -951,7 +951,8 @@ namespace Http
                     options.onBehalfOfUser = onBehalfOfUser
                 end if
                 if source = "home"
-                    result = InnertubeService.GetHome(options)
+                    ' the home page Recommended just loaded (one load less at startup)
+                    result = m.HomeFeeds(options)
                 else
                     result = InnertubeService.GetSubscriptions(options)
                 end if

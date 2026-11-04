@@ -13,6 +13,7 @@ namespace Locale
         Info = "Info"
         BuiltIn = "(built-in)"
         SavedCopy = "(saved copy)"
+        UpdatedTo = "Updated to v%1"
     end enum
 
     @locale

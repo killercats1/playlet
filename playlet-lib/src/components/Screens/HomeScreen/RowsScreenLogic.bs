@@ -1,8 +1,13 @@
+import "pkg:/components/ContentNode/ProfileContentAuthTokenUtils.types.bs"
 import "pkg:/components/ContextMenu/ContextMenuUtils.bs"
+import "pkg:/components/Dialog/DialogUtils.bs"
 import "pkg:/components/Navigation/Navigation.bs"
 import "pkg:/components/Screens/HomeScreen/HomeScreenUtils.bs"
+import "pkg:/components/Screens/HomeScreen/WhatsNew.bs"
+import "pkg:/components/Services/ApplicationInfo/LibManifestUtils.bs"
 import "pkg:/source/utils/FocusManagement.bs"
 import "pkg:/source/utils/Locale.bs"
+import "pkg:/source/utils/RegistryUtils.bs"
 import "pkg:/source/utils/RemoteKeys.bs"
 import "pkg:/source/utils/Types.bs"
 
@@ -36,8 +41,65 @@ function OnNodeReady()
     ' (similar to bookmarks screen)
     if m.top.useHomeLayout
         m.preferences.observeFieldScoped("misc.home_screen_layout", FuncName(OnHomeLayoutChange))
+        ShowUpdatedCard()
+        ' an expired YouTube sign-in leaves Home empty: say so (also when it expires later)
+        profilesService = m.rowList.profilesService
+        if profilesService <> invalid
+            profilesService.observeFieldScoped("currentProfile", FuncName(OnCurrentProfileForSignIn))
+            OnCurrentProfileForSignIn()
+        end if
     end if
     OnHomeLayoutChange()
+end function
+
+function OnCurrentProfileForSignIn() as void
+    if m.watchedProfile <> invalid
+        m.watchedProfile.unobserveFieldScoped("authState")
+        m.watchedProfile = invalid
+    end if
+    profile = m.rowList.profilesService.currentProfile
+    if profile = invalid
+        return
+    end if
+    m.watchedProfile = profile
+    profile.observeFieldScoped("authState", FuncName(CheckSignIn))
+    CheckSignIn()
+end function
+
+' Once per launch: the account needs signing in again (Profile tab).
+function CheckSignIn() as void
+    if m.signInDialogShown = true or m.watchedProfile = invalid
+        return
+    end if
+    if m.watchedProfile.authState <> ProfileContentAuthTokenUtils.ProfileAuthState.NeedsReauth
+        return
+    end if
+    m.signInDialogShown = true
+    DialogUtils.ShowDialogEx({
+        title: Tr(Locale.Dialogs.ProfileNeedsReauthTitle)
+        message: Tr(Locale.Dialogs.ProfileNeedsReauthMessage)
+    })
+end function
+
+' After an update arrived (auto-update), a card with the new version and what's new (once per version).
+function ShowUpdatedCard() as void
+    current = LibManifestUtils.GetLibVersion()
+    last = ValidString(RegistryUtils.Read(RegistryUtils.LAST_LIB_VERSION))
+    if last = current
+        return
+    end if
+    RegistryUtils.Write(RegistryUtils.LAST_LIB_VERSION, current)
+    videoQueue = m.rowList.videoQueue
+    if videoQueue = invalid or videoQueue.notifications = invalid
+        return
+    end if
+    card = videoQueue.notifications.createChild("VideoQueueNotification")
+    card.id = "UpdatedNotification"
+    card.heading = Tr(Locale.NavBar.UpdatedTo).Replace("%1", current)
+    card.line1 = WHATS_NEW
+    card.thumbnail = "pkg:/images/logo-dark.png"
+    card.hintVisible = false
+    card.show = true
 end function
 
 function OnHomeLayoutChange() as void

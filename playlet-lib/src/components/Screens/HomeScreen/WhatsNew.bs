@@ -1,0 +1,3 @@
+' Shown on the "Updated to vX" card the first time Home opens after an update. One short line, updated with
+' each release.
+const WHATS_NEW = "Home tells you when your YouTube sign-in has expired, and this card shows what's new after each update."

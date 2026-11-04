@@ -1696,5 +1696,9 @@
         <source>(saved copy)</source>
         <translation>(saved copy)</translation>
     </message>
+    <message>
+        <source>Updated to v%1</source>
+        <translation>Updated to v%1</translation>
+    </message>
 </context>
 </TS>
