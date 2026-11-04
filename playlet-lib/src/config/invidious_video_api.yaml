@@ -217,6 +217,13 @@ auth_home_shelf:
   authenticated: true
   paginationType: Continuation
 
+# Implemented only by Playlet backend: one shelf of a YouTube TV topic page (topic: music..., index: 1, 2...).
+auth_topic_shelf:
+  title: Music for you
+  url: /api/v1/auth/topic_shelf
+  authenticated: true
+  paginationType: Continuation
+
 # Implemented only by Playlet backend: the channels the YouTube account is subscribed to.
 auth_channels:
   title: Your channels

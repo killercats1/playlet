@@ -500,7 +500,7 @@ namespace Http
             end if
 
             shelfIndex = ValidString(request.query.index).ToInt()
-            shelves = m.HomeShelves(result.feeds)
+            shelves = m.Shelves(result.feeds, true)
             if shelfIndex < 1 or shelfIndex > shelves.Count()
                 ' fewer shelves than rows: the row just goes away
                 response.Json({ "error": "No such home shelf" })
@@ -511,20 +511,103 @@ namespace Http
             return true
         end function
 
-        ' The home shelves after the first, cleaned up: no video twice (also not one already in Recommended), no
-        ' Shorts-only shelves (Shorts have their own row), and none with too little left to fill a row.
-        function HomeShelves(feeds as object) as object
+        ' One shelf of a YouTube TV topic page (Music: "Mixed for you", "New releases", "Trending"...), as its own
+        ' row with YouTube's title, like the TV app's Music page. topic: music, news, gaming or live; index: 1 for
+        ' the first shelf.
+        @get("/playlet-invidious-backend/api/v1/auth/topic_shelf")
+        function GetAuthTopicShelf(context as object) as boolean
+            request = context.request
+            response = context.response
+
+            accessToken = m.RequireAccessToken(request, response)
+            if accessToken = invalid
+                return true
+            end if
+
+            topic = ValidString(request.query.topic)
+            if topic <> "music" and topic <> "news" and topic <> "gaming" and topic <> "live"
+                response.Json({ "error": "Unknown topic" })
+                response.http_code = 400
+                return true
+            end if
+
+            options = {
+                "accessToken": accessToken
+                "disableShorts": m.preferences["content_feed.disable_shorts"]
+            }
+            activeIdentifyToken = request.query.activeIdentifyToken
+            if not StringUtils.IsNullOrEmpty(activeIdentifyToken)
+                options.onBehalfOfUser = activeIdentifyToken
+            end if
+
+            ' more videos of a shelf already shown
+            continuation = ValidString(request.query.continuation)
+            if continuation <> ""
+                options.continuation = continuation
+                result = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_" + topic, options)
+                if result.error <> invalid or not m.HasItems(result.feeds)
+                    response.Json({ "items": [] })
+                    return true
+                end if
+                page = m.CleanFeed(result.feeds[0], true)
+                page.Delete("title")
+                response.Json(page)
+                return true
+            end if
+
+            ' the rows of one topic load together: one page load, kept for a short while
+            cacheKey = `${topic}|${accessToken}|${ValidString(options.onBehalfOfUser)}|${ValidBool(options.disableShorts)}`
+            now = CreateObject("roDateTime").AsSeconds()
+            if not IsAssociativeArray(m.topicCache)
+                m.topicCache = {}
+            end if
+            cache = m.topicCache[topic]
+            feeds = invalid
+            if IsAssociativeArray(cache) and cache.key = cacheKey and now - cache.savedAt <= HOME_CACHE_SECONDS
+                feeds = cache.feeds
+            else
+                result = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_" + topic, options)
+                if result.error <> invalid
+                    response.Json(result)
+                    response.http_code = 500
+                    return true
+                end if
+                feeds = result.feeds
+                if IsArray(feeds) and feeds.Count() > 0
+                    m.topicCache[topic] = { key: cacheKey, savedAt: now, feeds: feeds }
+                end if
+            end if
+
+            shelfIndex = ValidString(request.query.index).ToInt()
+            shelves = m.Shelves(feeds, false)
+            if shelfIndex < 1 or shelfIndex > shelves.Count()
+                response.Json({ "error": "No such topic shelf" })
+                response.http_code = 404
+                return true
+            end if
+            response.Json(shelves[shelfIndex - 1])
+            return true
+        end function
+
+        ' A page's shelves, cleaned up: no video twice (with skipFirst, also not one in the first shelf, which is
+        ' Recommended on Home), no Shorts-only shelves (Shorts have their own row), and none with too little left
+        ' to fill a row.
+        function Shelves(feeds as object, skipFirst as boolean) as object
             shelves = []
-            if not IsArray(feeds) or feeds.Count() < 2
+            if not IsArray(feeds) or feeds.Count() = 0
                 return shelves
             end if
             seen = {}
-            if IsAssociativeArray(feeds[0]) and IsArray(feeds[0].items)
-                for each item in feeds[0].items
-                    seen[m.FeedItemKey(item)] = true
-                end for
+            firstIndex = 0
+            if skipFirst
+                firstIndex = 1
+                if IsAssociativeArray(feeds[0]) and IsArray(feeds[0].items)
+                    for each item in feeds[0].items
+                        seen[m.FeedItemKey(item)] = true
+                    end for
+                end if
             end if
-            for i = 1 to feeds.Count() - 1
+            for i = firstIndex to feeds.Count() - 1
                 feed = feeds[i]
                 if not IsAssociativeArray(feed) or not IsArray(feed.items)
                     continue for
@@ -833,24 +916,8 @@ namespace Http
                 return true
             end if
 
-            ' First the TV app's own Music page (signed in, like the home feed), then YouTube Music (which may
-            ' refuse the TV sign-in).
-            musicOptions = {
-                "accessToken": accessToken
-                "disableShorts": true
-            }
-            if not StringUtils.IsNullOrEmpty(request.query.activeIdentifyToken)
-                musicOptions.onBehalfOfUser = request.query.activeIdentifyToken
-            end if
-            tvMusic = InnertubeService.GetBrowseAuthenticatedPage("FEtopics_music", musicOptions)
-            if tvMusic.error = invalid and IsArray(tvMusic.feeds) and tvMusic.feeds.Count() > 0
-                merged = m.MergeFeeds(tvMusic.feeds)
-                if merged.items.Count() > 0
-                    response.Json({ "items": merged.items })
-                    return true
-                end if
-            end if
-
+            ' YouTube Music's own home (it may refuse the TV sign-in; the row then goes away). The TV app's Music
+            ' page is already on the Music tab as its own rows (GetAuthTopicShelf).
             result = InnertubeMusic.GetHome(accessToken, request.query.activeIdentifyToken, invalid)
             if result.error <> invalid
                 response.Json({ "error": `YouTube Music recommendations unavailable: ${result.error}` })

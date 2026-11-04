@@ -154,6 +154,7 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.PlayNext), m.videoQueue, "FuncPlayNextVideo", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.QueueVideo), m.videoQueue, "FuncAddToQueueVideo", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.VideoDetails), m.top, "OpenVideoDetails", [rowItem]))
+        options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.StartMix), m.top, "StartMix", [rowItem]))
         ' YouTube feedback, when the feed item carried the tokens and a YouTube account is signed in
         profile = m.top.profilesService.currentProfile
         if profile <> invalid and profile.type = "youtube"
@@ -293,6 +294,21 @@ function SendFeedback(video as object, kind as string) as void
     else
         ShowRowListNotification(Tr(Locale.ContextMenu.VideoHidden), video)
     end if
+end function
+
+'  "Start mix": YouTube's endless mix (radio) of songs/videos like this one, the "RD<videoId>" playlist.
+function StartMix(video as object) as void
+    videoId = ValidString(video.videoId)
+    if videoId = ""
+        return
+    end if
+    mix = CreateObject("roSGNode", "PlaylistContentNode")
+    mix.loadState = FeedLoadState.None
+    mix.type = "playlist"
+    mix.playlistId = "RD" + videoId
+    mix.videoId = videoId
+    mix.title = Tr(Locale.ContextMenu.MixTitle).Replace("%1", ValidString(video.title))
+    m.videoQueue@.FuncPlayPlaylist(mix, 0)
 end function
 
 function RowFeedSourceId(rowItem as object) as string

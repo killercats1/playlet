@@ -1668,5 +1668,17 @@
         <source>Start at the speed you last picked with the player's Speed button, also after Playlet restarts.</source>
         <translation>Start at the speed you last picked with the player&apos;s Speed button, also after Playlet restarts.</translation>
     </message>
+    <message>
+        <source>Music for you</source>
+        <translation>Music for you</translation>
+    </message>
+    <message>
+        <source>Start mix</source>
+        <translation>Start mix</translation>
+    </message>
+    <message>
+        <source>Mix - %1</source>
+        <translation>Mix - %1</translation>
+    </message>
 </context>
 </TS>

@@ -60,6 +60,7 @@ namespace Locale
         ContinueWatching = "Continue watching"
         MoreForYou = "More for you"
         YourChannels = "Your channels"
+        MusicForYou = "Music for you"
     end enum
 
     @locale
@@ -466,6 +467,8 @@ namespace Locale
         RemovedFromLikedVideos = "Removed from Liked videos"
         RemovedFromHistory = "Removed from watch history"
         ShufflePlaylist = "Shuffle play"
+        StartMix = "Start mix"
+        MixTitle = "Mix - %1"
     end enum
 
     @locale
