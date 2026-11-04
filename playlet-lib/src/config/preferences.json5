@@ -16,7 +16,7 @@
         key: "playback.autoplay_countdown",
         description: "Before autoplay starts a related video, show what's up next for a few seconds so you can cancel.",
         type: "boolean",
-        defaultValue: true,
+        defaultValue: false,
       },
       {
         displayText: "Remember playback speed",

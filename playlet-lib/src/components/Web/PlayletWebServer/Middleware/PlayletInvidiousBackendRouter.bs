@@ -531,7 +531,7 @@ namespace Http
             end if
 
             shelfIndex = ValidString(request.query.index).ToInt()
-            shelves = m.Shelves(result.feeds, true)
+            shelves = m.Shelves(result.feeds, true, "")
             if shelfIndex < 1 or shelfIndex > shelves.Count()
                 ' fewer shelves than rows: the row just goes away
                 response.Json({ "error": "No such home shelf" })
@@ -610,7 +610,7 @@ namespace Http
             end if
 
             shelfIndex = ValidString(request.query.index).ToInt()
-            shelves = m.Shelves(feeds, false)
+            shelves = m.Shelves(feeds, false, topic)
             if shelfIndex < 1 or shelfIndex > shelves.Count()
                 response.Json({ "error": "No such topic shelf" })
                 response.http_code = 404
@@ -623,7 +623,7 @@ namespace Http
         ' A page's shelves, cleaned up: no video twice (with skipFirst, also not one in the first shelf, which is
         ' Recommended on Home), no Shorts-only shelves (Shorts have their own row), and none with too little left
         ' to fill a row.
-        function Shelves(feeds as object, skipFirst as boolean) as object
+        function Shelves(feeds as object, skipFirst as boolean, topic as string) as object
             shelves = []
             if not IsArray(feeds) or feeds.Count() = 0
                 return shelves
@@ -661,7 +661,7 @@ namespace Http
                     end if
                     items.Push(item)
                 end for
-                if onlyShorts
+                if onlyShorts or m.IsGeneralShelf(ValidString(feed.title), topic)
                     continue for
                 end if
                 shelf = m.CleanFeed({ "title": ValidString(feed.title), "items": items }, true)
@@ -674,6 +674,33 @@ namespace Http
                 shelves.Push(shelf)
             end for
             return shelves
+        end function
+
+        ' Shelves for everyone rather than for this account (Trending, Live, News, Gaming...) on Home, or shelves of
+        ' another topic further down a topic page (the Music page's later parts bring Gaming and Live).
+        function IsGeneralShelf(title as string, topic as string) as boolean
+            lower = LCase(title)
+            if lower = ""
+                return false
+            end if
+            words = ["trending", "live", "popular", "news", "gaming", "sports", "movies", "learning", "fashion", "podcast", "premium"]
+            if topic = "music"
+                ' trending/popular music is music
+                words = ["live", "news", "gaming", "sports", "movies", "learning", "fashion", "podcast", "premium"]
+            else if topic <> ""
+                words = ["news", "gaming", "sports", "movies", "learning", "fashion", "podcast", "premium", "music"]
+                for i = words.Count() - 1 to 0 step -1
+                    if words[i] = topic
+                        words.Delete(i)
+                    end if
+                end for
+            end if
+            for each word in words
+                if lower.InStr(word) <> -1
+                    return true
+                end if
+            end for
+            return false
         end function
 
         ' Drops what the user doesn't want to see: videos and channels marked Not interested / Don't recommend
@@ -747,6 +774,14 @@ namespace Http
                                 if ValidInt(item.videoCount) <= 0
                                     item["videoCount"] = -1
                                     item.Delete("videoCountText")
+                                end if
+                                ' nor subscribers: the tile shows the handle (or nothing) instead of "0 subscribers"
+                                if ValidInt(item.subCount) <= 0 and StringUtils.IsNullOrEmpty(item.authorSubTitle)
+                                    item.Delete("subCount")
+                                    item["authorSubTitle"] = ValidString(item.channelHandle)
+                                    if item["authorSubTitle"] = ""
+                                        item["authorSubTitle"] = " "
+                                    end if
                                 end if
                                 channels.Push(item)
                             end if

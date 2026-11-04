@@ -933,14 +933,11 @@ function CyclePlaybackSpeed() as void
         RegistryUtils.Write(RegistryUtils.PLAYBACK_SPEED, nextSpeed.ToStr())
     end if
     ApplyPlaybackSpeed()
-    ' some Rokus only take a new speed when the stream (re)starts: re-seek to where we are, still playing
-    content = m.top.content
-    if m.firstFrameSeen and not (content <> invalid and content.Live = true)
-        posMs = CInt(ValidFloat(m.top.position) * 1000)
-        if posMs > 0
-            m.transport.ForceIdleSeek(posMs, true)
-            ApplyTransport()
-        end if
+    ' some Rokus only take a new speed on a (re)start of playback: pause, set it, resume
+    if m.firstFrameSeen and m.top.state = "playing"
+        m.top.control = VideoControl.Pause
+        ApplyPlaybackSpeed()
+        m.top.control = VideoControl.Resume
     end if
     UpdateSpeedLabel(true)
     ArmAutoHide()
@@ -2132,7 +2129,7 @@ end function
 ' close the player.
 '-------------------------------------------------------------------------------
 function ShowAutoplayCountdown() as boolean
-    if m.preferences = invalid or m.preferences["playback.autoplay_countdown"] = false
+    if m.preferences = invalid or m.preferences["playback.autoplay_countdown"] <> true
         return false
     end if
     nextVideo = NextAutoplayVideo()
