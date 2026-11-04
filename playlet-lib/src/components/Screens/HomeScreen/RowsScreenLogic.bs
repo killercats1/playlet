@@ -41,6 +41,8 @@ function OnNodeReady()
     ' (similar to bookmarks screen)
     if m.top.useHomeLayout
         m.preferences.observeFieldScoped("misc.home_screen_layout", FuncName(OnHomeLayoutChange))
+        ' the "Updated to vX" card: when the first videos show up (Home is on screen then)
+        m.rowList.observeFieldScoped("someContentReady", FuncName(OnSomeContentReady))
         ' an expired YouTube sign-in leaves Home empty: say so (also when it expires later)
         profilesService = m.rowList.profilesService
         if profilesService <> invalid
@@ -78,6 +80,12 @@ function CheckSignIn() as void
         title: Tr(Locale.Dialogs.ProfileNeedsReauthTitle)
         message: Tr(Locale.Dialogs.ProfileNeedsReauthMessage)
     })
+end function
+
+function OnSomeContentReady() as void
+    if m.rowList.someContentReady = true
+        ShowUpdatedCard()
+    end if
 end function
 
 ' After an update arrived (auto-update), a card with the new version and what's new (once per version). Shown

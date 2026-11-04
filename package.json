@@ -1,6 +1,6 @@
 {
     "name": "playlet",
-    "version": "2.13.15",
+    "version": "2.13.16",
     "description": "Unofficial YouTube client for Roku",
     "devDependencies": {
         "@rokucommunity/bslint": "^0.8.46",
