@@ -37,7 +37,7 @@ function OnNodeReady()
     m.channelButton.translation = [m.playButton.translation[0] + m.playButton.boundingRect().width + 20, m.playButton.translation[1]]
 
     ' Save to Watch later, for YouTube accounts
-    profile = m.top.profilesService.currentProfile
+    profile = CurrentProfile()
     canSave = profile <> invalid and profile.type = "youtube"
     m.watchLaterButton.text = Tr(Locale.ContextMenu.SaveToWatchLater)
     m.watchLaterButton.visible = canSave
@@ -51,6 +51,15 @@ function OnNodeReady()
     UpdateSubscribeButton()
 
     LoadDetails()
+end function
+
+' The signed-in profile, or invalid (also while the services aren't bound yet).
+function CurrentProfile() as dynamic
+    profilesService = m.top.profilesService
+    if profilesService = invalid
+        return invalid
+    end if
+    return profilesService.currentProfile
 end function
 
 function OnFocusChange() as void
@@ -139,7 +148,7 @@ end function
 
 ' Subscribe / Unsubscribe for the video's channel, once it's known; asks whether the account already follows it.
 function UpdateSubscribeButton() as void
-    profile = m.top.profilesService.currentProfile
+    profile = CurrentProfile()
     show = m.authorId <> "" and profile <> invalid
     m.subscribeButton.visible = show
     m.subscribeButton.focusable = show
@@ -171,7 +180,7 @@ function OnIsSubscribedChange() as void
 end function
 
 function OnSubscribeSelected() as void
-    profile = m.top.profilesService.currentProfile
+    profile = CurrentProfile()
     if m.authorId = "" or profile = invalid
         return
     end if
@@ -235,7 +244,7 @@ function OnWatchLaterSelected() as void
     m.watchLaterJob = JobSystem.CreateCallback(OnWatchLaterJobDone)
     JobSystem.QueueJob(m.top.jobQueue, Jobs.WatchLaterJob, {
         videoId: content.videoId
-        profile: m.top.profilesService.currentProfile
+        profile: CurrentProfile()
     }, m.watchLaterJob)
 end function
 

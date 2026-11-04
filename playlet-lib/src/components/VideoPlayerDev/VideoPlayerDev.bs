@@ -878,6 +878,10 @@ end function
 ' videos (on the video queue) until changed. Live streams always play at 1x. Not every Roku can change the speed:
 ' then the button says so.
 '-------------------------------------------------------------------------------
+function wasHiddenBeforeReveal() as boolean
+    return m.chromeMode = ChromeMode.Hidden or m.chromeMode = ChromeMode.FadingOut
+end function
+
 function RememberSpeed() as boolean
     return m.preferences <> invalid and m.preferences["playback.remember_speed"] = true
 end function
@@ -1220,6 +1224,10 @@ function ShowChrome(instant = false as boolean) as void
     ' and Like/Dislike whether the account already rated this video
     FetchLikeStatusOnce()
     UpdateSleepTimerLabel(false)
+    ' one-off messages (Saved to Watch later...) don't stay: back to the speed, if not normal
+    if wasHiddenBeforeReveal()
+        UpdateSpeedLabel(false)
+    end if
     wasHidden = (m.chromeMode = ChromeMode.Hidden or m.chromeMode = ChromeMode.FadingOut)
     m.chromeFadeOut.control = "stop"
     m.chrome.visible = true

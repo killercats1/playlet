@@ -479,6 +479,10 @@ function InsertNextInQueue(videoNode as object) as void
     if m.top.preferences["misc.queue_notifications"]
         hintVisible = m.top.player = invalid or not m.top.videoContainer.fullscreen
         VideoQueue.ShowNotifcation(m.top.notifications, node, hintVisible)
+        notification = m.top.notifications.findNode(VideoQueue.NOTIFICATION_NODE_ID)
+        if notification <> invalid
+            notification.heading = Tr(Locale.QueueNotification.PlaysNext)
+        end if
     end if
 end function
 

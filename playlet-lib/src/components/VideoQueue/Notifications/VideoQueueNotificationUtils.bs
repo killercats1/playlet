@@ -1,3 +1,5 @@
+import "pkg:/source/utils/Locale.bs"
+
 namespace VideoQueue
     const NOTIFICATION_NODE_ID = "VideoQueueNotification"
 
@@ -8,6 +10,7 @@ namespace VideoQueue
             notification.id = NOTIFICATION_NODE_ID
         end if
         notification.content = contentNode
+        notification.heading = Tr(Locale.QueueNotification.VideoAddedToQueue)
         notification.hintVisible = hintVisible
         notification.show = true
     end function

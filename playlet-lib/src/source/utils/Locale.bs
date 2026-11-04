@@ -398,6 +398,7 @@ namespace Locale
     @locale
     enum QueueNotification
         VideoAddedToQueue = "Added to queue"
+        PlaysNext = "Plays next"
         PressToOpenQueueHint = "Press and hold Options (*) to open the queue"
     end enum
 

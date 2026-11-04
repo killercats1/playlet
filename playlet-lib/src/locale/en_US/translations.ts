@@ -1680,5 +1680,9 @@
         <source>Mix - %1</source>
         <translation>Mix - %1</translation>
     </message>
+    <message>
+        <source>Plays next</source>
+        <translation>Plays next</translation>
+    </message>
 </context>
 </TS>
