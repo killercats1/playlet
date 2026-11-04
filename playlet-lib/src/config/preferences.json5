@@ -322,7 +322,7 @@
           },
           {
             id: "subscriptions",
-            enabled: false,
+            enabled: true,
           },
           {
             id: "playlists",
@@ -334,11 +334,11 @@
           },
           {
             id: "trending_livestreams",
-            enabled: true,
+            enabled: false,
           },
           {
             id: "trending_gaming",
-            enabled: true,
+            enabled: false,
           },
         ],
         visibility: "tv",

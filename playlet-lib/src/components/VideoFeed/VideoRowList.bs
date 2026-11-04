@@ -254,13 +254,17 @@ function SendFeedback(video as object, kind as string) as void
         authorId = ValidString(video.authorId)
     end if
     videoId = ValidString(video.videoId)
+    cardHeading = Tr(Locale.ContextMenu.VideoHidden)
+    if kind = "channel"
+        cardHeading = Tr(Locale.ContextMenu.ChannelHidden)
+    end if
     JobSystem.QueueJob(m.jobQueue, Jobs.FeedbackJob, {
         token: token
         profile: m.top.profilesService.currentProfile
         kind: kind
         videoId: videoId
         authorId: authorId
-    }, JobSystem.CreateCallback())
+    }, CardCallback(cardHeading, video))
 
     row = video.getParent()
     if row = invalid
@@ -286,35 +290,20 @@ function SendFeedback(video as object, kind as string) as void
     if video.getParent() <> invalid
         video.getParent().removeChild(video)
     end if
-    if kind = "channel"
-        ShowRowListNotificationSoon(Tr(Locale.ContextMenu.ChannelHidden), video)
-    else
-        ShowRowListNotificationSoon(Tr(Locale.ContextMenu.VideoHidden), video)
-    end if
 end function
 
-' The card a moment later: picked from the options menu, it would slide in behind the closing menu.
-function ShowRowListNotificationSoon(heading as string, video as dynamic) as void
-    notifications = m.videoQueue.notifications
-    if notifications = invalid
-        return
-    end if
-    m.pendingCard = { heading: heading, video: video }
-    if m.cardTimer = invalid
-        m.cardTimer = notifications.createChild("Timer")
-        m.cardTimer.duration = 0.6
-        m.cardTimer.repeat = false
-        m.cardTimer.observeFieldScoped("fire", FuncName(OnCardTimer))
-    end if
-    m.cardTimer.control = "start"
+' A job callback that shows the card when the job is done, like Save to Watch later's (which does show: a card
+' shown right away, from the options menu, never appeared).
+function CardCallback(heading as string, video as object) as object
+    callback = JobSystem.CreateCallback(OnCardJobDone)
+    callback.addFields({ cardHeading: heading, cardVideo: video })
+    return callback
 end function
 
-function OnCardTimer() as void
-    card = m.pendingCard
-    m.pendingCard = invalid
-    if card <> invalid
-        ShowRowListNotification(card.heading, card.video)
-    end if
+function OnCardJobDone(event as object) as void
+    callback = event.getRoSGNode()
+    JobSystem.UnobserveCallback(callback)
+    ShowRowListNotification(callback.cardHeading, callback.cardVideo)
 end function
 
 '  "Start mix": YouTube's endless mix (radio) of songs/videos like this one, the "RD<videoId>" playlist.
@@ -383,16 +372,12 @@ function RemoveFromList(video as object, list as string) as void
     if videoId = ""
         return
     end if
-    heading = ""
     if list = "watchLater"
-        JobSystem.QueueJob(m.jobQueue, Jobs.WatchLaterJob, { videoId: videoId, profile: profile, remove: true }, JobSystem.CreateCallback())
-        heading = Tr(Locale.ContextMenu.RemovedFromWatchLater)
+        JobSystem.QueueJob(m.jobQueue, Jobs.WatchLaterJob, { videoId: videoId, profile: profile, remove: true }, CardCallback(Tr(Locale.ContextMenu.RemovedFromWatchLater), video))
     else if list = "liked"
-        JobSystem.QueueJob(m.jobQueue, Jobs.LikeJob, { videoId: videoId, action: "removelike", profile: profile }, JobSystem.CreateCallback())
-        heading = Tr(Locale.ContextMenu.RemovedFromLikedVideos)
+        JobSystem.QueueJob(m.jobQueue, Jobs.LikeJob, { videoId: videoId, action: "removelike", profile: profile }, CardCallback(Tr(Locale.ContextMenu.RemovedFromLikedVideos), video))
     else if list = "history"
-        JobSystem.QueueJob(m.jobQueue, Jobs.FeedbackJob, { token: video.removeFromHistoryToken, profile: profile, kind: "history", videoId: videoId }, JobSystem.CreateCallback())
-        heading = Tr(Locale.ContextMenu.RemovedFromHistory)
+        JobSystem.QueueJob(m.jobQueue, Jobs.FeedbackJob, { token: video.removeFromHistoryToken, profile: profile, kind: "history", videoId: videoId }, CardCallback(Tr(Locale.ContextMenu.RemovedFromHistory), video))
     else
         return
     end if
@@ -400,7 +385,6 @@ function RemoveFromList(video as object, list as string) as void
     if row <> invalid
         row.removeChild(video)
     end if
-    ShowRowListNotificationSoon(heading, video)
 end function
 
 function SaveToWatchLater(video as object) as void
