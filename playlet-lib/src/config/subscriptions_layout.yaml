@@ -1,4 +1,13 @@
 # Rows of the Subscriptions tab in the side bar.
+# The subscribed channels (signed in with YouTube); the row goes away if YouTube doesn't list them.
+- title: Your channels
+  id: your_channels
+  feedSources:
+    - id: inv_auth_channels
+      title: Your channels
+      apiType: Invidious
+      endpoint: auth_channels
+
 - title: Subscriptions
   id: subscriptions
   feedSources:

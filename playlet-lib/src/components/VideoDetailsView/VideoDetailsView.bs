@@ -21,7 +21,9 @@ function Init()
     m.descriptionLabel = m.top.findNode("descriptionLabel")
     m.playButton = m.top.findNode("playButton")
     m.channelButton = m.top.findNode("channelButton")
+    m.watchLaterButton = m.top.findNode("watchLaterButton")
     m.detailsJob = invalid
+    m.watchLaterJob = invalid
     m.authorId = ""
 end function
 
@@ -31,11 +33,17 @@ function OnNodeReady()
     ' the channel button sits right of the play button, whatever width the play button's text gives it
     m.channelButton.translation = [m.playButton.translation[0] + m.playButton.boundingRect().width + 20, m.playButton.translation[1]]
 
-    SetNavigation(m.playButton, RemoteKeys.Right, m.channelButton)
-    SetNavigation(m.channelButton, RemoteKeys.Left, m.playButton)
+    ' Save to Watch later, for YouTube accounts
+    profile = m.top.profilesService.currentProfile
+    canSave = profile <> invalid and profile.type = "youtube"
+    m.watchLaterButton.text = Tr(Locale.ContextMenu.SaveToWatchLater)
+    m.watchLaterButton.visible = canSave
+    m.watchLaterButton.focusable = canSave
+    UpdateButtonLayout()
 
     m.playButton.ObserveField("buttonSelected", FuncName(OnPlaySelected))
     m.channelButton.ObserveField("buttonSelected", FuncName(OnChannelSelected))
+    m.watchLaterButton.ObserveField("buttonSelected", FuncName(OnWatchLaterSelected))
 
     LoadDetails()
 end function
@@ -121,6 +129,65 @@ function SetAuthorId(authorId as string) as void
     hasChannel = authorId <> ""
     m.channelButton.visible = hasChannel
     m.channelButton.focusable = hasChannel
+    UpdateButtonLayout()
+end function
+
+' The visible buttons in a row, left to right, with Left/Right between neighbors.
+function UpdateButtonLayout() as void
+    buttons = [m.playButton]
+    if m.channelButton.visible
+        buttons.Push(m.channelButton)
+    end if
+    if m.watchLaterButton.visible
+        buttons.Push(m.watchLaterButton)
+    end if
+    ' drop the previous Left/Right links between the buttons (the first match wins in NavigationKeyHandler)
+    if IsAssociativeArray(m._navigation)
+        for each direction in [RemoteKeys.Left, RemoteKeys.Right]
+            links = m._navigation[direction]
+            if IsArray(links)
+                kept = []
+                for each link in links
+                    if link.fromNode = invalid or not (link.fromNode.isSameNode(m.playButton) or link.fromNode.isSameNode(m.channelButton) or link.fromNode.isSameNode(m.watchLaterButton))
+                        kept.Push(link)
+                    end if
+                end for
+                m._navigation[direction] = kept
+            end if
+        end for
+    end if
+    x = m.playButton.translation[0]
+    y = m.playButton.translation[1]
+    for i = 0 to buttons.Count() - 1
+        buttons[i].translation = [x, y]
+        x += buttons[i].boundingRect().width + 20
+        if i > 0
+            SetNavigation(buttons[i], RemoteKeys.Left, buttons[i - 1])
+            SetNavigation(buttons[i - 1], RemoteKeys.Right, buttons[i])
+        end if
+    end for
+end function
+
+function OnWatchLaterSelected() as void
+    content = m.top.content
+    if content = invalid or StringUtils.IsNullOrEmpty(content.videoId) or m.watchLaterJob <> invalid
+        return
+    end if
+    m.watchLaterJob = JobSystem.CreateCallback(OnWatchLaterJobDone)
+    JobSystem.QueueJob(m.top.jobQueue, Jobs.WatchLaterJob, {
+        videoId: content.videoId
+        profile: m.top.profilesService.currentProfile
+    }, m.watchLaterJob)
+end function
+
+function OnWatchLaterJobDone(event as object) as void
+    JobSystem.UnobserveCallback(event.getRoSGNode())
+    m.watchLaterJob = invalid
+    if event.getInfo().success = true
+        m.watchLaterButton.text = Tr(Locale.ContextMenu.SavedToWatchLater)
+    else
+        m.watchLaterButton.text = Tr(Locale.ContextMenu.CouldNotSaveToWatchLater)
+    end if
 end function
 
 function OnPlaySelected() as void

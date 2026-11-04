@@ -26,6 +26,9 @@ end function
 function OnSleepTimerChange() as void
     m.sleepTimer.control = "stop"
     minutes = m.top.sleepTimerMinutes
+    if minutes > 0
+        m.top.sleepAfterVideo = false
+    end if
     if minutes <= 0
         m.top.sleepTimerEndsAt = 0
         return

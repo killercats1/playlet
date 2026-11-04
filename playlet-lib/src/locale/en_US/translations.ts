@@ -1564,5 +1564,33 @@
         <source>Don't show videos you've already watched to the end on Home and in topic feeds.</source>
         <translation>Don&apos;t show videos you&apos;ve already watched to the end on Home and in topic feeds.</translation>
     </message>
+    <message>
+        <source>Playback stops at the end of this video.</source>
+        <translation>Playback stops at the end of this video.</translation>
+    </message>
+    <message>
+        <source>Your channels</source>
+        <translation>Your channels</translation>
+    </message>
+    <message>
+        <source>Removed from your feeds</source>
+        <translation>Removed from your feeds</translation>
+    </message>
+    <message>
+        <source>Channel hidden from your feeds</source>
+        <translation>Channel hidden from your feeds</translation>
+    </message>
+    <message>
+        <source>Reset Not interested</source>
+        <translation>Reset Not interested</translation>
+    </message>
+    <message>
+        <source>Let videos and channels you marked Not interested or Don't recommend show up in Playlet's feeds again. This doesn't change what YouTube remembers.</source>
+        <translation>Let videos and channels you marked Not interested or Don&apos;t recommend show up in Playlet&apos;s feeds again. This doesn&apos;t change what YouTube remembers.</translation>
+    </message>
+    <message>
+        <source>Not interested list cleared.</source>
+        <translation>Not interested list cleared.</translation>
+    </message>
 </context>
 </TS>

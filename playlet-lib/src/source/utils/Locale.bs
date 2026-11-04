@@ -59,6 +59,7 @@ namespace Locale
         Courses = "Courses"
         ContinueWatching = "Continue watching"
         MoreForYou = "More for you"
+        YourChannels = "Your channels"
     end enum
 
     @locale
@@ -330,6 +331,9 @@ namespace Locale
         PoTokensCleared = "PoTokens cleared."
         EnableDiagnostics = "Enable Diagnostics"
         EnableDiagnosticsDescription = "Save diagnostics (errors and crash reports) to a log file on this TV. Nothing is sent anywhere."
+        ResetHiddenVideos = "Reset Not interested"
+        ResetHiddenVideosDescription = "Let videos and channels you marked Not interested or Don't recommend show up in Playlet's feeds again. This doesn't change what YouTube remembers."
+        HiddenVideosReset = "Not interested list cleared."
     end enum
 
     @locale
@@ -442,6 +446,8 @@ namespace Locale
         SaveToWatchLater = "Save to Watch later"
         SavedToWatchLater = "Saved to Watch later"
         CouldNotSaveToWatchLater = "Couldn't save to Watch later"
+        VideoHidden = "Removed from your feeds"
+        ChannelHidden = "Channel hidden from your feeds"
     end enum
 
     @locale
@@ -476,6 +482,7 @@ namespace Locale
         Minutes30 = "30 minutes"
         Hour1 = "1 hour"
         Hours2 = "2 hours"
+        EndOfVideoActive = "Playback stops at the end of this video."
     end enum
 
     @locale

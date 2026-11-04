@@ -12,6 +12,8 @@ const RECOMMENDED_FEED_SOURCE_ID = "inv_auth_recommended"
 ' the row list moves down to make room for the topic chips while they show
 const ROWLIST_Y = 50
 const ROWLIST_Y_WITH_CHIPS = 90
+' coming back to Home after this long reloads it (like YouTube, so the feed isn't hours old)
+const STALE_AFTER_SECONDS = 1800
 
 function OnNodeReady()
     SetNavigation(invalid, RemoteKeys.Back, m.navBar)
@@ -44,6 +46,20 @@ function OnHomeLayoutChange() as void
         preferences = m.preferences
     end if
     m.rowList.feeds = HomeScreenUtils.GetFeed(m.top.feedFile, preferences)
+    m.loadedAt = CreateObject("roDateTime").AsSeconds()
+end function
+
+function RefreshIfStale() as void
+    if not m.top.useHomeLayout or not IsInt(m.loadedAt)
+        return
+    end if
+    now = CreateObject("roDateTime").AsSeconds()
+    if now - m.loadedAt < STALE_AFTER_SECONDS
+        return
+    end if
+    LogInfo("Home was loaded", now - m.loadedAt, "seconds ago: refreshing")
+    m.loadedAt = now
+    m.rowList@.Refresh()
 end function
 
 ' Watches the Recommended row so its topic chips (sent by YouTube with the feed) can show above the rows.
@@ -134,6 +150,7 @@ function OnFocusChange() as void
     if not m.top.focus
         return
     end if
+    RefreshIfStale()
     NodeSetFocus(m.rowList, true)
 end function
 

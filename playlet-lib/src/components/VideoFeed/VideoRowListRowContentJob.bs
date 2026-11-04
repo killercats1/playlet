@@ -248,6 +248,7 @@ function RemoveSingleFailedRow(error as dynamic, feedSource as object, feedSourc
     isError = isError or feedSource.id = "inv_auth_liked_videos" or feedSource.id = "inv_auth_watch_later"
     ' Home shelf rows beyond the shelves YouTube sent, or nothing to continue watching
     isError = isError or ValidString(feedSource.id).StartsWith("inv_auth_home_shelf") or feedSource.id = "inv_auth_continue_watching"
+    isError = isError or feedSource.id = "inv_auth_channels"
     if not isError
         return false
     end if

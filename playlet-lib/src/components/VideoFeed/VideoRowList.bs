@@ -274,6 +274,11 @@ function SendFeedback(video as object, kind as string) as void
     if video.getParent() <> invalid
         video.getParent().removeChild(video)
     end if
+    if kind = "channel"
+        ShowRowListNotification(Tr(Locale.ContextMenu.ChannelHidden), video)
+    else
+        ShowRowListNotification(Tr(Locale.ContextMenu.VideoHidden), video)
+    end if
 end function
 
 function SaveToWatchLater(video as object) as void

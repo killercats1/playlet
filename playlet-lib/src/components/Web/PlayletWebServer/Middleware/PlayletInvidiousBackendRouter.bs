@@ -599,6 +599,55 @@ namespace Http
             return cleaned
         end function
 
+        ' The channels the account is subscribed to: YouTube's channel list page, or the channels on the
+        ' subscriptions page when that has none.
+        @get("/playlet-invidious-backend/api/v1/auth/channels")
+        function GetAuthChannels(context as object) as boolean
+            request = context.request
+            response = context.response
+
+            accessToken = m.RequireAccessToken(request, response)
+            if accessToken = invalid
+                return true
+            end if
+
+            options = { "accessToken": accessToken }
+            activeIdentifyToken = request.query.activeIdentifyToken
+            if not StringUtils.IsNullOrEmpty(activeIdentifyToken)
+                options.onBehalfOfUser = activeIdentifyToken
+            end if
+
+            channels = []
+            seen = {}
+            for each browseId in ["FEchannels", "FEsubscriptions"]
+                result = InnertubeService.GetBrowseAuthenticatedPage(browseId, options)
+                if result.error = invalid and IsArray(result.feeds)
+                    for each feed in result.feeds
+                        if not IsAssociativeArray(feed) or not IsArray(feed.items)
+                            continue for
+                        end if
+                        for each item in feed.items
+                            if IsAssociativeArray(item) and item.type = "channel" and IsString(item.authorId) and not seen.DoesExist(item.authorId)
+                                seen[item.authorId] = true
+                                channels.Push(item)
+                            end if
+                        end for
+                    end for
+                end if
+                if channels.Count() > 0
+                    exit for
+                end if
+            end for
+
+            if channels.Count() = 0
+                response.Json({ "error": "No channel list" })
+                response.http_code = 404
+                return true
+            end if
+            response.Json({ "items": channels })
+            return true
+        end function
+
         ' Videos started but not finished, from the account's watch history (like YouTube's "Continue watching").
         @get("/playlet-invidious-backend/api/v1/auth/continue_watching")
         function GetAuthContinueWatching(context as object) as boolean

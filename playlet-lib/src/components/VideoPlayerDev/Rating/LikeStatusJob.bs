@@ -1,0 +1,74 @@
+import "pkg:/components/ContentNode/ProfileContentAuthTokenUtils.bs"
+import "pkg:/components/Services/Innertube/Context.bs"
+import "pkg:/source/services/HttpClient.bs"
+
+' Whether the signed-in YouTube account already liked or disliked a video, so the player's Like/Dislike buttons
+' start in the right state. input: { videoId, profile } -> data: { likeState: 0 none, 1 liked, 2 disliked }
+' The rating appears as "likeStatus" ("LIKE" / "DISLIKE" / "INDIFFERENT") somewhere in the TV watch page; where
+' exactly changes between layouts, so it is searched for.
+@job("LikeStatusJob")
+function ExecuteJob() as void
+    input = JobGetInput()
+    videoId = ValidString(input.videoId)
+    profile = input.profile
+    if videoId = "" or profile = invalid or profile.type <> "youtube"
+        JobError("Like status needs a video and a YouTube account")
+        return
+    end if
+    auth = ProfileContentAuthTokenUtils.EnsureFreshAccessToken(profile)
+    if auth.state <> ProfileContentAuthTokenUtils.AccessTokenState.Ok
+        JobError("No usable access token: " + auth.state)
+        return
+    end if
+
+    options = { accessToken: auth.token }
+    if not StringUtils.IsNullOrEmpty(auth.activeIdentifyToken)
+        options.onBehalfOfUser = auth.activeIdentifyToken
+    end if
+    request = HttpClient.Post("https://www.youtube.com/youtubei/v1/next?prettyPrint=false&alt=json").JsonBody({
+        "context": Innertube.CreateContext(Innertube.ClientType.Tv, CreateObject("roDeviceInfo"), options)
+        "videoId": videoId
+    })
+    request.Headers(Innertube.CreateHeaders(Innertube.ClientType.Tv))
+    request.Header("Authorization", "Bearer " + auth.token)
+    request.Cancellation(JobGetCancellation())
+    response = request.Await()
+    if not response.IsSuccess()
+        JobError("Failed to load the like status: " + response.ErrorMessage())
+        return
+    end if
+
+    likeStatus = UCase(FindLikeStatus(response.Json(), 40))
+    likeState = 0
+    if likeStatus = "LIKE"
+        likeState = 1
+    else if likeStatus = "DISLIKE"
+        likeState = 2
+    end if
+    JobSuccessData({ likeState: likeState })
+end function
+
+function FindLikeStatus(data as dynamic, depth as integer) as string
+    if depth < 0
+        return ""
+    end if
+    if IsAssociativeArray(data)
+        if IsString(data["likeStatus"])
+            return data["likeStatus"]
+        end if
+        for each key in data
+            found = FindLikeStatus(data[key], depth - 1)
+            if found <> ""
+                return found
+            end if
+        end for
+    else if IsArray(data)
+        for each child in data
+            found = FindLikeStatus(child, depth - 1)
+            if found <> ""
+                return found
+            end if
+        end for
+    end if
+    return ""
+end function

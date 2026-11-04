@@ -1,4 +1,12 @@
 # Rows of the Library tab in the side bar.
+- title: Continue watching
+  id: continue_watching
+  feedSources:
+    - id: inv_auth_continue_watching
+      title: Continue watching
+      apiType: Invidious
+      endpoint: auth_continue_watching
+
 - title: Watch history
   id: watch_history
   feedSources:

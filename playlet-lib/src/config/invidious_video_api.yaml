@@ -217,6 +217,12 @@ auth_home_shelf:
   authenticated: true
   paginationType: Continuation
 
+# Implemented only by Playlet backend: the channels the YouTube account is subscribed to.
+auth_channels:
+  title: Your channels
+  url: /api/v1/auth/channels
+  authenticated: true
+
 # Implemented only by Playlet backend: videos from the watch history that were started but not finished.
 auth_continue_watching:
   title: Continue watching

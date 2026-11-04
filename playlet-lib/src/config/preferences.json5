@@ -93,6 +93,13 @@
         type: "boolean",
         defaultValue: true,
       },
+      {
+        displayText: "Reset Not interested",
+        key: "content_feed.reset_hidden",
+        description: "Let videos and channels you marked Not interested or Don't recommend show up in Playlet's feeds again. This doesn't change what YouTube remembers.",
+        visibility: "tv",
+        rokuComponent: "ClearHiddenVideosControl",
+      },
     ],
   },
   {

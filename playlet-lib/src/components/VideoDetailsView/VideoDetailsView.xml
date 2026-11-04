@@ -9,6 +9,7 @@
         <field id="preferences" type="node" bind="/Preferences" />
         <field id="jobQueue" type="node" bind="/JobQueue" />
         <field id="videoQueue" type="node" bind="/VideoQueue" />
+        <field id="profilesService" type="node" bind="/ProfilesService" />
     </interface>
     <children>
         <Rectangle width="1280" height="720" color="0x181818" />
@@ -53,6 +54,13 @@
             iconVisible="false"
             padding="[30,30]"
             translation="[300, 410]" />
+        <ButtonEx
+            id="watchLaterButton"
+            focusable="true"
+            iconVisible="false"
+            padding="[30,30]"
+            visible="false"
+            translation="[520, 410]" />
 
         <Label
             id="descriptionLabel"

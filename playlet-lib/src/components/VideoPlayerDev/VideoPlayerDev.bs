@@ -103,6 +103,7 @@ function Initialize()
     m.likeJob = invalid
     m.subscribeJob = invalid
     m.subscriptionStatusFetched = false
+    m.likeStatusFetched = false
     ' Watch later button: the save request in flight, and whether this video was saved
     m.watchLaterJob = invalid
     m.watchLaterSaved = false
@@ -729,6 +730,36 @@ function FetchSubscriptionStatusOnce() as void
     }, JobSystem.CreateCallback())
 end function
 
+function FetchLikeStatusOnce() as void
+    if m.likeStatusFetched
+        return
+    end if
+    profile = CurrentProfile()
+    content = m.top.content
+    if profile = invalid or profile.type <> "youtube" or content = invalid or StringUtils.IsNullOrEmpty(content.videoId)
+        return
+    end if
+    m.likeStatusFetched = true
+    JobSystem.QueueJob(m.jobQueue, Jobs.LikeStatusJob, { videoId: content.videoId, profile: profile }, JobSystem.CreateCallback(OnLikeStatusJobDone))
+end function
+
+' Only fills in the buttons while they are untouched: a press in the meantime wins.
+function OnLikeStatusJobDone(event as object) as void
+    JobSystem.UnobserveCallback(event.getRoSGNode())
+    if m.onCloseCalled = true
+        return
+    end if
+    info = event.getInfo()
+    if not info.success or not IsAssociativeArray(info.data)
+        return
+    end if
+    if m.likeJob <> invalid or m.likeState <> 0
+        return
+    end if
+    m.likeState = ValidInt(info.data.likeState)
+    m.buttonRow.likeState = m.likeState
+end function
+
 function OnIsSubscribedChange() as void
     m.buttonRow.subscribed = m.top.isSubscribed
 end function
@@ -958,7 +989,15 @@ function OnWatchLaterJobDone(event as object) as void
     end if
 end function
 
+' Off -> 15 -> 30 -> 60 -> 120 minutes -> End of video -> Off.
 function CycleSleepTimer() as void
+    if m.videoQueue.sleepAfterVideo = true
+        m.videoQueue.sleepAfterVideo = false
+        m.videoQueue.sleepTimerMinutes = 0
+        UpdateSleepTimerLabel(true)
+        ArmAutoHide()
+        return
+    end if
     steps = [15, 30, 60, 120]
     left = SleepTimerMinutesLeft()
     minutes = 0
@@ -968,6 +1007,14 @@ function CycleSleepTimer() as void
             exit for
         end if
     end for
+    if minutes = 0 and left > 0
+        ' past the last step: stop at the end of this video
+        m.videoQueue.sleepTimerMinutes = 0
+        m.videoQueue.sleepAfterVideo = true
+        UpdateSleepTimerLabel(true)
+        ArmAutoHide()
+        return
+    end if
     m.videoQueue.sleepTimerMinutes = minutes
     UpdateSleepTimerLabel(true)
     ArmAutoHide()
@@ -976,6 +1023,11 @@ end function
 ' justChanged: also say "off" (otherwise the label only shows while a timer runs)
 function UpdateSleepTimerLabel(justChanged as boolean) as void
     left = SleepTimerMinutesLeft()
+    if m.videoQueue.sleepAfterVideo = true
+        m.buttonRow.sleepTimerOn = true
+        m.buttonRow.sleepTimerText = Tr(Locale.SleepTimer.EndOfVideoActive)
+        return
+    end if
     m.buttonRow.sleepTimerOn = left > 0
     if left > 0
         m.buttonRow.sleepTimerText = Tr(Locale.SleepTimer.Active).Replace("%1", left.ToStr())
@@ -1132,6 +1184,8 @@ function ShowChrome(instant = false as boolean) as void
     end if
     ' the Subscribe button shows whether the account already follows this channel
     FetchSubscriptionStatusOnce()
+    ' and Like/Dislike whether the account already rated this video
+    FetchLikeStatusOnce()
     UpdateSleepTimerLabel(false)
     wasHidden = (m.chromeMode = ChromeMode.Hidden or m.chromeMode = ChromeMode.FadingOut)
     m.chromeFadeOut.control = "stop"
@@ -1937,6 +1991,13 @@ function OnPlaybackFinished() as void
     ' before PlayNext/ClosePlayer: either can close this player, and send its summary, synchronously.
     m.playbackTelemetry.OnFinished()
     LogDebug("playback finished -> PlayNext or close")
+    ' sleep timer "End of video": stop here
+    if m.videoQueue.sleepAfterVideo = true
+        LogInfo("Sleep timer: end of video, stopping playback")
+        m.videoQueue.sleepAfterVideo = false
+        ClosePlayer()
+        return
+    end if
     ' Shorts: on to the next Short (waiting for more at the end, or looping), never a regular video
     if IsPlayingShort()
         FlipShort(true)

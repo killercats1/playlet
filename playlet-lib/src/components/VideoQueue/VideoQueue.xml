@@ -22,6 +22,8 @@
         <!-- Sleep timer: minutes until playback stops (0 = off); sleepTimerEndsAt is when, in epoch seconds. -->
         <field id="sleepTimerMinutes" type="integer" value="0" onChange="OnSleepTimerChange" alwaysNotify="true" />
         <field id="sleepTimerEndsAt" type="integer" value="0" />
+        <!-- Sleep timer "End of video": the player closes when the playing video ends, instead of playing the next. -->
+        <field id="sleepAfterVideo" type="boolean" value="false" />
         <!-- Playback speed picked with the player's Speed button, kept for the next videos (1 = normal). -->
         <field id="preferredPlaybackSpeed" type="float" value="1.0" />
 
