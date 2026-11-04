@@ -41,7 +41,6 @@ function OnNodeReady()
     ' (similar to bookmarks screen)
     if m.top.useHomeLayout
         m.preferences.observeFieldScoped("misc.home_screen_layout", FuncName(OnHomeLayoutChange))
-        ShowUpdatedCard()
         ' an expired YouTube sign-in leaves Home empty: say so (also when it expires later)
         profilesService = m.rowList.profilesService
         if profilesService <> invalid
@@ -81,24 +80,35 @@ function CheckSignIn() as void
     })
 end function
 
-' After an update arrived (auto-update), a card with the new version and what's new (once per version).
+' After an update arrived (auto-update), a card with the new version and what's new (once per version). Shown
+' when Home first has focus: when Home is only built, the loading screen still covers everything.
 function ShowUpdatedCard() as void
-    current = LibManifestUtils.GetLibVersion()
-    last = ValidString(RegistryUtils.Read(RegistryUtils.LAST_LIB_VERSION))
-    if last = current
+    if not m.top.useHomeLayout or m.updatedCardDone = true
         return
     end if
-    RegistryUtils.Write(RegistryUtils.LAST_LIB_VERSION, current)
+    current = LibManifestUtils.GetLibVersion()
+    if ValidString(RegistryUtils.Read(RegistryUtils.LAST_LIB_VERSION)) = current
+        m.updatedCardDone = true
+        return
+    end if
     videoQueue = m.rowList.videoQueue
     if videoQueue = invalid or videoQueue.notifications = invalid
+        ' not wired up yet: try again on the next focus
         return
     end if
+    m.updatedCardDone = true
+    RegistryUtils.Write(RegistryUtils.LAST_LIB_VERSION, current)
     card = videoQueue.notifications.createChild("VideoQueueNotification")
     card.id = "UpdatedNotification"
     card.heading = Tr(Locale.NavBar.UpdatedTo).Replace("%1", current)
     card.line1 = WHATS_NEW
     card.thumbnail = "pkg:/images/logo-dark.png"
     card.hintVisible = false
+    ' longer than the queue card's 3 seconds: there's a sentence to read
+    cardTimer = card.findNode("animationTimer")
+    if cardTimer <> invalid
+        cardTimer.duration = 6
+    end if
     card.show = true
 end function
 
@@ -213,6 +223,7 @@ function OnFocusChange() as void
         return
     end if
     RefreshIfStale()
+    ShowUpdatedCard()
     NodeSetFocus(m.rowList, true)
 end function
 
