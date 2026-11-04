@@ -89,8 +89,9 @@ function OnSomeContentReady() as void
     end if
 end function
 
-' After an update arrived (auto-update), a card with the new version and what's new (once per version). Shown
-' when Home first has focus: when Home is only built, the loading screen still covers everything.
+'' After an update arrived (auto-update): a message with the new version and what's new, once per version. It
+' waits until the launcher's loading screen is gone (Home gets focus while it still covers everything). A message
+' box rather than the small card: the card never showed up on the TV.
 function ShowUpdatedCard() as void
     if not m.top.useHomeLayout or m.updatedCardDone = true
         return
@@ -100,11 +101,8 @@ function ShowUpdatedCard() as void
         m.updatedCardDone = true
         return
     end if
-    videoQueue = m.rowList.videoQueue
-    ' the launcher's loading screen covers everything (the card would play out underneath it): wait it out
     loadingIndicator = m.global.loadingIndicator
-    loadingShows = loadingIndicator <> invalid and loadingIndicator.visible = true
-    if loadingShows or videoQueue = invalid or videoQueue.notifications = invalid
+    if loadingIndicator <> invalid and loadingIndicator.visible = true
         if m.updatedCardTimer = invalid
             m.updatedCardTimer = m.top.createChild("Timer")
             m.updatedCardTimer.duration = 1
@@ -119,18 +117,10 @@ function ShowUpdatedCard() as void
     end if
     m.updatedCardDone = true
     RegistryUtils.Write(RegistryUtils.LAST_LIB_VERSION, current)
-    card = videoQueue.notifications.createChild("VideoQueueNotification")
-    card.id = "UpdatedNotification"
-    card.heading = Tr(Locale.NavBar.UpdatedTo).Replace("%1", current)
-    card.line1 = WHATS_NEW
-    card.thumbnail = "pkg:/images/logo-dark.png"
-    card.hintVisible = false
-    ' longer than the queue card's 3 seconds: there's a sentence to read
-    cardTimer = card.findNode("animationTimer")
-    if cardTimer <> invalid
-        cardTimer.duration = 6
-    end if
-    card.show = true
+    DialogUtils.ShowDialogEx({
+        title: Tr(Locale.NavBar.UpdatedTo).Replace("%1", current)
+        message: WHATS_NEW
+    })
 end function
 
 function OnHomeLayoutChange() as void

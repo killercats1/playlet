@@ -1,6 +1,6 @@
 {
   "name": "playlet-web",
-  "version": "2.13.17",
+  "version": "2.13.18",
   "type": "module",
   "scripts": {
     "dev": "vite",
