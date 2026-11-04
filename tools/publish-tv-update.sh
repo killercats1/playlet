@@ -17,7 +17,13 @@ version=$(node -p "require('./package.json').version")
 sha=$(git rev-parse --short HEAD)
 
 work=$(mktemp -d)
-trap 'git worktree remove --force "$work" >/dev/null 2>&1 || true; rm -rf "$work"' EXIT
+cleanup() {
+    git worktree remove --force "$work" >/dev/null 2>&1 || true
+    rm -rf "$work"
+    git branch -D tv-updates-publish >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+git branch -D tv-updates-publish >/dev/null 2>&1 || true
 git worktree add --detach "$work" >/dev/null
 cp "$zip" "$work/playlet-lib.zip.new"
 (
