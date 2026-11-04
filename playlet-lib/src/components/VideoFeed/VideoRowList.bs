@@ -303,7 +303,14 @@ end function
 function OnCardJobDone(event as object) as void
     callback = event.getRoSGNode()
     JobSystem.UnobserveCallback(callback)
-    ShowRowListNotification(callback.cardHeading, callback.cardVideo)
+    heading = callback.cardHeading
+    ' don't claim it worked when YouTube refused it
+    info = event.getInfo()
+    if info.success <> true and info.cancel <> true
+        LogWarn("Options menu action failed:", info.error)
+        heading = Tr(Locale.ContextMenu.ActionFailed)
+    end if
+    ShowRowListNotification(heading, callback.cardVideo)
 end function
 
 '  "Start mix": YouTube's endless mix (radio) of songs/videos like this one, the "RD<videoId>" playlist.

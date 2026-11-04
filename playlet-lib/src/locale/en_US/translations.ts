@@ -1688,5 +1688,9 @@
         <source>(built-in)</source>
         <translation>(built-in)</translation>
     </message>
+    <message>
+        <source>That didn't work, try again</source>
+        <translation>That didn&apos;t work, try again</translation>
+    </message>
 </context>
 </TS>

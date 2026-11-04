@@ -471,6 +471,7 @@ namespace Locale
         ShufflePlaylist = "Shuffle play"
         StartMix = "Start mix"
         MixTitle = "Mix - %1"
+        ActionFailed = "That didn't work, try again"
     end enum
 
     @locale
