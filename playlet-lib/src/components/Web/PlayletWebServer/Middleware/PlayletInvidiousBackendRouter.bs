@@ -450,7 +450,8 @@ namespace Http
             if not fresh and IsAssociativeArray(cache) and cache.key = cacheKey and now - cache.savedAt <= HOME_CACHE_SECONDS
                 return { feeds: cache.feeds }
             end if
-            result = m.AllShelfFeeds("FEwhat_to_watch", options)
+            ' one extra part of the page at most: further down there are only general shelves (left out anyway)
+            result = m.AllShelfFeeds("FEwhat_to_watch", options, 1)
             if result.error = invalid and IsArray(result.feeds) and result.feeds.Count() > 0
                 m.homeCache = { key: cacheKey, savedAt: now, feeds: result.feeds }
             end if
@@ -459,7 +460,7 @@ namespace Http
 
         ' A TV page with all its shelves: the first load only has the top few, the rest come with the page's
         ' "more shelves" continuation (followed up to twice).
-        function AllShelfFeeds(browseId as string, options as object) as object
+        function AllShelfFeeds(browseId as string, options as object, maxMorePages = 2 as integer) as object
             result = InnertubeService.GetBrowseAuthenticatedPage(browseId, options)
             if result.error <> invalid or not IsArray(result.feeds) or result.feeds.Count() = 0
                 return result
@@ -468,7 +469,7 @@ namespace Http
             feeds.Append(result.feeds)
             more = ValidString(result.feeds[0].sectionContinuation)
             pages = 0
-            while more <> "" and pages < 2 and feeds.Count() < 12
+            while more <> "" and pages < maxMorePages and feeds.Count() < 12
                 pages += 1
                 pageOptions = {}
                 pageOptions.Append(options)
@@ -991,10 +992,22 @@ namespace Http
                 return true
             end if
 
-            ' YouTube Music's own home (it may refuse the TV sign-in; the row then goes away). The TV app's Music
-            ' page is already on the Music tab as its own rows (GetAuthTopicShelf).
+            ' YouTube Music's own home (it may refuse the TV sign-in). Otherwise the TV app's Music page in one row,
+            ' but only when it has no shelves of its own for the Music tab's rows (no songs twice).
             result = InnertubeMusic.GetHome(accessToken, request.query.activeIdentifyToken, invalid)
             if result.error <> invalid
+                musicOptions = { "accessToken": accessToken, "disableShorts": true }
+                if not StringUtils.IsNullOrEmpty(request.query.activeIdentifyToken)
+                    musicOptions.onBehalfOfUser = request.query.activeIdentifyToken
+                end if
+                tvMusic = m.AllShelfFeeds("FEtopics_music", musicOptions)
+                if tvMusic.error = invalid and m.HasItems(tvMusic.feeds) and m.Shelves(tvMusic.feeds, false, "music").Count() = 0
+                    merged = m.CleanFeed(m.MergeFeeds(tvMusic.feeds), true)
+                    if merged.items.Count() > 0
+                        response.Json({ "items": merged.items })
+                        return true
+                    end if
+                end if
                 response.Json({ "error": `YouTube Music recommendations unavailable: ${result.error}` })
                 response.http_code = 500
                 return true

@@ -1,6 +1,6 @@
 {
     "name": "playlet-lib",
-    "version": "2.13.18",
+    "version": "2.14.18",
     "description": "Unofficial YouTube client for Roku",
     "scripts": {
         "prebuild": "node ../tools/rm.js ../build/playlet-lib",
