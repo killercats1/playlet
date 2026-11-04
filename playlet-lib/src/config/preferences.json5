@@ -79,6 +79,20 @@
         type: "boolean",
         defaultValue: true,
       },
+      {
+        displayText: "Hide members-only videos",
+        key: "content_feed.hide_members_only",
+        description: "Don't show videos only channel members can watch on Home and in topic feeds.",
+        type: "boolean",
+        defaultValue: true,
+      },
+      {
+        displayText: "Hide watched videos",
+        key: "content_feed.hide_watched",
+        description: "Don't show videos you've already watched to the end on Home and in topic feeds.",
+        type: "boolean",
+        defaultValue: true,
+      },
     ],
   },
   {
@@ -257,7 +271,15 @@
             enabled: true,
           },
           {
+            id: "continue_watching",
+            enabled: true,
+          },
+          {
             id: "shorts",
+            enabled: true,
+          },
+          {
+            id: "home_shelves",
             enabled: true,
           },
           {

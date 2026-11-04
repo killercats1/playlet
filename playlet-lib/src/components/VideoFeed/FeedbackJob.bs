@@ -1,14 +1,21 @@
 import "pkg:/components/ContentNode/ProfileContentAuthTokenUtils.bs"
+import "pkg:/components/Services/FeedFilters/FeedFilters.bs"
 import "pkg:/components/Services/Innertube/Context.bs"
 import "pkg:/source/services/HttpClient.bs"
 
 ' Sends YouTube a "Not interested" / "Don't recommend channel" for the signed-in account (feedback token from
-' the feed item's menu). input: { token, profile }
+' the feed item's menu), and remembers the video/channel on the TV so feeds drop it right away.
+' input: { token, profile, kind: "notInterested"|"channel", videoId, authorId }
 @job("FeedbackJob")
 function ExecuteJob() as void
     input = JobGetInput()
     token = ValidString(input.token)
     profile = input.profile
+    if ValidString(input.kind) = "channel"
+        FeedFilters.Remember("channel", ValidString(input.authorId))
+    else
+        FeedFilters.Remember("video", ValidString(input.videoId))
+    end if
     if token = ""
         JobError("No feedback token")
         return

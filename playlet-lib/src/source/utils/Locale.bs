@@ -57,6 +57,8 @@ namespace Locale
         Releases = "Releases"
         Podcasts = "Podcasts"
         Courses = "Courses"
+        ContinueWatching = "Continue watching"
+        MoreForYou = "More for you"
     end enum
 
     @locale
@@ -274,6 +276,10 @@ namespace Locale
         DisableShortsDescription = "Disable short videos."
         ThumbnailPreviews = "Thumbnail previews"
         ThumbnailPreviewsDescription = "The selected video's thumbnail cycles through moments from the video."
+        HideMembersOnly = "Hide members-only videos"
+        HideMembersOnlyDescription = "Don't show videos only channel members can watch on Home and in topic feeds."
+        HideWatched = "Hide watched videos"
+        HideWatchedDescription = "Don't show videos you've already watched to the end on Home and in topic feeds."
 
         ' "Invidious" is used as node id, so we can't use it before refactoring node ids.
         ' Either way, Invidious doesn't translate, so it's fine to skip it here
@@ -433,6 +439,9 @@ namespace Locale
         RefreshBookmarks = "Refresh Bookmarks"
         RemoveFromBookmarks = "Remove from %1 bookmarks"
         AddToBookmark = "Add to %1 bookmark"
+        SaveToWatchLater = "Save to Watch later"
+        SavedToWatchLater = "Saved to Watch later"
+        CouldNotSaveToWatchLater = "Couldn't save to Watch later"
     end enum
 
     @locale
@@ -445,6 +454,9 @@ namespace Locale
     @locale
     enum Player
         UpNext = "Up next"
+        SpeedNotSupported = "This TV can't change the playback speed"
+        SpeedValue = "Speed: %1"
+        SpeedNormal = "Speed: Normal"
     end enum
 
     @locale

@@ -22,6 +22,8 @@
         <!-- Sleep timer: minutes until playback stops (0 = off); sleepTimerEndsAt is when, in epoch seconds. -->
         <field id="sleepTimerMinutes" type="integer" value="0" onChange="OnSleepTimerChange" alwaysNotify="true" />
         <field id="sleepTimerEndsAt" type="integer" value="0" />
+        <!-- Playback speed picked with the player's Speed button, kept for the next videos (1 = normal). -->
+        <field id="preferredPlaybackSpeed" type="float" value="1.0" />
 
         <!-- Endless Shorts: the player asks for more at the end of the queue, and waits while shortsLoading. -->
         <field id="loadMoreShorts" type="boolean" alwaysNotify="true" onChange="OnLoadMoreShorts" />

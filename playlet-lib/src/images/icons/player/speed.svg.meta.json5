@@ -1,0 +1,11 @@
+{
+  inputHash: 'bdfb4f3508e691bef743a5d42efb7144',
+  outputs: [
+    {
+      outputFilePath: 'images/icons/player/speed.png',
+      outputHash: '7530a213af9ac2bb7472765e028d420f',
+      width: 63,
+      height: 63,
+    },
+  ],
+}

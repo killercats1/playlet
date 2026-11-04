@@ -1516,5 +1516,53 @@
         <source>Select keyboard language</source>
         <translation>Select keyboard language</translation>
     </message>
+    <message>
+        <source>Continue watching</source>
+        <translation>Continue watching</translation>
+    </message>
+    <message>
+        <source>More for you</source>
+        <translation>More for you</translation>
+    </message>
+    <message>
+        <source>Save to Watch later</source>
+        <translation>Save to Watch later</translation>
+    </message>
+    <message>
+        <source>Saved to Watch later</source>
+        <translation>Saved to Watch later</translation>
+    </message>
+    <message>
+        <source>Couldn't save to Watch later</source>
+        <translation>Couldn&apos;t save to Watch later</translation>
+    </message>
+    <message>
+        <source>This TV can't change the playback speed</source>
+        <translation>This TV can&apos;t change the playback speed</translation>
+    </message>
+    <message>
+        <source>Speed: %1</source>
+        <translation>Speed: %1</translation>
+    </message>
+    <message>
+        <source>Speed: Normal</source>
+        <translation>Speed: Normal</translation>
+    </message>
+    <message>
+        <source>Hide members-only videos</source>
+        <translation>Hide members-only videos</translation>
+    </message>
+    <message>
+        <source>Don't show videos only channel members can watch on Home and in topic feeds.</source>
+        <translation>Don&apos;t show videos only channel members can watch on Home and in topic feeds.</translation>
+    </message>
+    <message>
+        <source>Hide watched videos</source>
+        <translation>Hide watched videos</translation>
+    </message>
+    <message>
+        <source>Don't show videos you've already watched to the end on Home and in topic feeds.</source>
+        <translation>Don&apos;t show videos you&apos;ve already watched to the end on Home and in topic feeds.</translation>
+    </message>
 </context>
 </TS>

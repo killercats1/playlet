@@ -1,0 +1,11 @@
+{
+  inputHash: '4ee147df26acf04d2bfc513a7d951861',
+  outputs: [
+    {
+      outputFilePath: 'images/icons/player/watch-later-on.png',
+      outputHash: 'bd1a7876b17de2a4735d95fbfd4e0215',
+      width: 63,
+      height: 63,
+    },
+  ],
+}

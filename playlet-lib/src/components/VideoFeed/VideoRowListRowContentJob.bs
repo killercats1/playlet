@@ -85,6 +85,11 @@ function ExecuteJob() as void
                 continue while
             end if
 
+            ' rows like the Home shelves are named by the feed (YouTube's shelf title)
+            if feedSource.useResponseTitle = true and IsString(response.result.title) and response.result.title <> ""
+                feedContentNode.title = response.result.title
+            end if
+
             itemNodes = []
             for each item in response.result.items
                 itemNode = InvidiousContent.ToRowCellContentNode(item, instance)
@@ -241,6 +246,8 @@ function RemoveSingleFailedRow(error as dynamic, feedSource as object, feedSourc
     isError = isError or feedSource.id = "inv_auth_shorts"
     ' Liked videos / Watch later: not available (e.g. an Invidious account), or empty
     isError = isError or feedSource.id = "inv_auth_liked_videos" or feedSource.id = "inv_auth_watch_later"
+    ' Home shelf rows beyond the shelves YouTube sent, or nothing to continue watching
+    isError = isError or ValidString(feedSource.id).StartsWith("inv_auth_home_shelf") or feedSource.id = "inv_auth_continue_watching"
     if not isError
         return false
     end if

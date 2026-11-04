@@ -1,8 +1,14 @@
+import "pkg:/components/Services/FeedFilters/FeedFilters.bs"
 import "pkg:/components/Services/Innertube/InnertubeService.bs"
 import "pkg:/components/Services/Innertube/MusicHome.bs"
 import "pkg:/components/Web/WebServer/Http/HttpRouter.bs"
 
 namespace Http
+
+    ' Recommended and the Home shelf rows share one home page load for this long
+    const HOME_CACHE_SECONDS = 120
+    ' a video watched this far counts as watched (hidden from feeds, not in Continue watching)
+    const WATCHED_PERCENT = 90
 
     class PlayletInvidiousBackendRouter extends HttpRouter
 
@@ -335,7 +341,12 @@ namespace Http
                 end if
             end if
 
-            result = InnertubeService.GetHome(options)
+            ' The first page comes from the home page shared with the Home shelf rows (see HomeFeeds)
+            if options.DoesExist("continuation")
+                result = InnertubeService.GetHome(options)
+            else
+                result = m.HomeFeeds(options)
+            end if
             if result.error <> invalid
                 response.Json(result)
                 response.http_code = 500
@@ -350,10 +361,9 @@ namespace Http
                 return true
             end if
 
-            ' Only the first shelf: it's the one personalized for the account. The other home shelves are general
-            ' ones (trending, music, topics...) and mixing them in buried the real recommendations.
-            recommended = {}
-            recommended.Append(result.feeds[0])
+            ' Only the first shelf here: it's the one personalized for the account. The other home shelves are their
+            ' own rows on Home (GetAuthHomeShelf), so they don't bury these.
+            recommended = m.CleanFeed(result.feeds[0], true)
             ' keep the topic chips, whichever shelf carried them
             if not recommended.DoesExist("sortOptions")
                 for each feed in result.feeds
@@ -396,7 +406,7 @@ namespace Http
 
             merged = invalid
             if m.HasItems(feeds)
-                merged = m.MergeFeeds(feeds)
+                merged = m.CleanFeed(m.MergeFeeds(feeds), true)
                 if not fromTopicPage
                     merged.Delete("continuation")
                 end if
@@ -430,6 +440,218 @@ namespace Http
         ' Subscriptions come back as several shelves (feeds), all of them the account's own subscriptions. Instead of
         ' only the first shelf, put all of them in the one row, in order and without duplicates. Paging continues
         ' the first shelf that has more to load.
+        ' The account's home page (all its shelves), kept for a short while: Recommended and the Home shelf rows
+        ' load at the same time and must come from the same page (the home page changes on every load).
+        function HomeFeeds(options as object) as object
+            cacheKey = `${ValidString(options.accessToken)}|${ValidString(options.onBehalfOfUser)}|${ValidBool(options.disableShorts)}`
+            now = CreateObject("roDateTime").AsSeconds()
+            cache = m.homeCache
+            if IsAssociativeArray(cache) and cache.key = cacheKey and now - cache.savedAt <= HOME_CACHE_SECONDS
+                return { feeds: cache.feeds }
+            end if
+            result = InnertubeService.GetHome(options)
+            if result.error = invalid and IsArray(result.feeds) and result.feeds.Count() > 0
+                m.homeCache = { key: cacheKey, savedAt: now, feeds: result.feeds }
+            end if
+            return result
+        end function
+
+        ' One of YouTube's own home shelves after the first ("Because you watched...", a channel's new videos,
+        ' Mixes...), as its own row with YouTube's title. index: 1 for the first shelf after Recommended.
+        @get("/playlet-invidious-backend/api/v1/auth/home_shelf")
+        function GetAuthHomeShelf(context as object) as boolean
+            request = context.request
+            response = context.response
+
+            accessToken = m.RequireAccessToken(request, response)
+            if accessToken = invalid
+                return true
+            end if
+
+            options = {
+                "accessToken": accessToken
+                "disableShorts": m.preferences["content_feed.disable_shorts"]
+            }
+            activeIdentifyToken = request.query.activeIdentifyToken
+            if not StringUtils.IsNullOrEmpty(activeIdentifyToken)
+                options.onBehalfOfUser = activeIdentifyToken
+            end if
+
+            ' more videos of a shelf already shown
+            continuation = ValidString(request.query.continuation)
+            if continuation <> ""
+                options.continuation = continuation
+                result = InnertubeService.GetHome(options)
+                if result.error <> invalid or not m.HasItems(result.feeds)
+                    response.Json({ "items": [] })
+                    return true
+                end if
+                page = m.CleanFeed(result.feeds[0], true)
+                page.Delete("title")
+                response.Json(page)
+                return true
+            end if
+
+            result = m.HomeFeeds(options)
+            if result.error <> invalid
+                response.Json(result)
+                response.http_code = 500
+                return true
+            end if
+
+            shelfIndex = ValidString(request.query.index).ToInt()
+            shelves = m.HomeShelves(result.feeds)
+            if shelfIndex < 1 or shelfIndex > shelves.Count()
+                ' fewer shelves than rows: the row just goes away
+                response.Json({ "error": "No such home shelf" })
+                response.http_code = 404
+                return true
+            end if
+            response.Json(shelves[shelfIndex - 1])
+            return true
+        end function
+
+        ' The home shelves after the first, cleaned up: no video twice (also not one already in Recommended), no
+        ' Shorts-only shelves (Shorts have their own row), and none with too little left to fill a row.
+        function HomeShelves(feeds as object) as object
+            shelves = []
+            if not IsArray(feeds) or feeds.Count() < 2
+                return shelves
+            end if
+            seen = {}
+            if IsAssociativeArray(feeds[0]) and IsArray(feeds[0].items)
+                for each item in feeds[0].items
+                    seen[m.FeedItemKey(item)] = true
+                end for
+            end if
+            for i = 1 to feeds.Count() - 1
+                feed = feeds[i]
+                if not IsAssociativeArray(feed) or not IsArray(feed.items)
+                    continue for
+                end if
+                items = []
+                onlyShorts = true
+                for each item in feed.items
+                    if not IsAssociativeArray(item)
+                        continue for
+                    end if
+                    key = m.FeedItemKey(item)
+                    if key <> ""
+                        if seen.DoesExist(key)
+                            continue for
+                        end if
+                        seen[key] = true
+                    end if
+                    if item.isShort <> true
+                        onlyShorts = false
+                    end if
+                    items.Push(item)
+                end for
+                if onlyShorts
+                    continue for
+                end if
+                shelf = m.CleanFeed({ "title": ValidString(feed.title), "items": items }, true)
+                if shelf.items.Count() < 3
+                    continue for
+                end if
+                if IsString(feed.continuation) and feed.continuation <> ""
+                    shelf["continuation"] = feed.continuation
+                end if
+                shelves.Push(shelf)
+            end for
+            return shelves
+        end function
+
+        ' Drops what the user doesn't want to see: videos and channels marked Not interested / Don't recommend
+        ' (remembered on the TV), members-only videos and, with hideWatched, videos already watched to the end
+        ' (both settings, on by default).
+        function CleanFeed(feed as object, hideWatched as boolean) as object
+            cleaned = {}
+            cleaned.Append(feed)
+            if not IsArray(feed.items)
+                return cleaned
+            end if
+            hidden = FeedFilters.LoadLookup()
+            ' both settings default to on (also before they exist in saved preferences)
+            hideMembersOnlyPref = m.preferences["content_feed.hide_members_only"]
+            hideMembersOnly = not IsBool(hideMembersOnlyPref) or hideMembersOnlyPref
+            hideWatchedPref = m.preferences["content_feed.hide_watched"]
+            hideWatched = hideWatched and (not IsBool(hideWatchedPref) or hideWatchedPref)
+            items = []
+            for each item in feed.items
+                if IsAssociativeArray(item)
+                    if IsString(item.videoId) and hidden.videos.DoesExist(item.videoId)
+                        continue for
+                    end if
+                    if IsString(item.authorId) and hidden.channels.DoesExist(item.authorId)
+                        continue for
+                    end if
+                    if hideMembersOnly and item.membersOnly = true
+                        continue for
+                    end if
+                    if hideWatched and IsNumber(item.percentDurationWatched) and item.percentDurationWatched >= WATCHED_PERCENT
+                        continue for
+                    end if
+                end if
+                items.Push(item)
+            end for
+            cleaned["items"] = items
+            return cleaned
+        end function
+
+        ' Videos started but not finished, from the account's watch history (like YouTube's "Continue watching").
+        @get("/playlet-invidious-backend/api/v1/auth/continue_watching")
+        function GetAuthContinueWatching(context as object) as boolean
+            request = context.request
+            response = context.response
+
+            accessToken = m.RequireAccessToken(request, response)
+            if accessToken = invalid
+                return true
+            end if
+
+            options = { "accessToken": accessToken }
+            activeIdentifyToken = request.query.activeIdentifyToken
+            if not StringUtils.IsNullOrEmpty(activeIdentifyToken)
+                options.onBehalfOfUser = activeIdentifyToken
+            end if
+
+            result = InnertubeService.GetWatchHistory(options)
+            items = []
+            seen = {}
+            if result.error = invalid and IsArray(result.feeds)
+                for each feed in result.feeds
+                    if not IsAssociativeArray(feed) or not IsArray(feed.items)
+                        continue for
+                    end if
+                    for each item in feed.items
+                        if items.Count() >= 30
+                            exit for
+                        end if
+                        if not IsAssociativeArray(item) or item.type <> "video" or item.isShort = true or not IsString(item.videoId)
+                            continue for
+                        end if
+                        if seen.DoesExist(item.videoId) or not IsNumber(item.percentDurationWatched)
+                            continue for
+                        end if
+                        if item.percentDurationWatched < 3 or item.percentDurationWatched >= WATCHED_PERCENT
+                            continue for
+                        end if
+                        seen[item.videoId] = true
+                        items.Push(item)
+                    end for
+                end for
+            end if
+
+            if items.Count() = 0
+                response.Json({ "error": "Nothing to continue watching" })
+                response.http_code = 404
+                return true
+            end if
+            response.Json({ "items": items })
+            return true
+        end function
+
         function MergeFeeds(feeds as object) as object
             maxItems = 150
             merged = {}
@@ -547,7 +769,7 @@ namespace Http
                 return true
             end if
 
-            response.Json({ "items": items })
+            response.Json(m.CleanFeed({ "items": items }, false))
             return true
         end function
 

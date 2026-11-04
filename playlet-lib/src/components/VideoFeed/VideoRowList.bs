@@ -162,6 +162,7 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
             if not StringUtils.IsNullOrEmpty(rowItem.dontRecommendChannelToken)
                 options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.DontRecommendChannel), m.top, "SendFeedback", [rowItem, "channel"]))
             end if
+            options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.SaveToWatchLater), m.top, "SaveToWatchLater", [rowItem]))
         end if
 
         authorId = rowItem.authorId
@@ -236,25 +237,87 @@ function SendFeedback(video as object, kind as string) as void
     if StringUtils.IsNullOrEmpty(token)
         return
     end if
+    authorId = ""
+    if video.hasField("authorId")
+        authorId = ValidString(video.authorId)
+    end if
+    videoId = ValidString(video.videoId)
     JobSystem.QueueJob(m.jobQueue, Jobs.FeedbackJob, {
         token: token
         profile: m.top.profilesService.currentProfile
+        kind: kind
+        videoId: videoId
+        authorId: authorId
     }, JobSystem.CreateCallback())
 
     row = video.getParent()
     if row = invalid
         return
     end if
-    if kind = "channel" and not StringUtils.IsNullOrEmpty(video.authorId)
-        authorId = video.authorId
-        for each item in row.getChildren(-1, 0)
-            if item.hasField("authorId") and item.authorId = authorId
-                row.removeChild(item)
+    ' gone from every row on this screen, not just the one it was picked in
+    rows = [row]
+    root = row.getParent()
+    if root <> invalid
+        rows = root.getChildren(-1, 0)
+    end if
+    for each feedRow in rows
+        for each item in feedRow.getChildren(-1, 0)
+            if kind = "channel" and authorId <> ""
+                if item.hasField("authorId") and item.authorId = authorId
+                    feedRow.removeChild(item)
+                end if
+            else if videoId <> "" and item.hasField("videoId") and item.videoId = videoId
+                feedRow.removeChild(item)
             end if
         end for
-    else
-        row.removeChild(video)
+    end for
+    if video.getParent() <> invalid
+        video.getParent().removeChild(video)
     end if
+end function
+
+function SaveToWatchLater(video as object) as void
+    if StringUtils.IsNullOrEmpty(video.videoId)
+        return
+    end if
+    m.watchLaterVideo = video
+    m.watchLaterJob = JobSystem.CreateCallback(OnWatchLaterJobDone)
+    JobSystem.QueueJob(m.jobQueue, Jobs.WatchLaterJob, {
+        videoId: video.videoId
+        profile: m.top.profilesService.currentProfile
+    }, m.watchLaterJob)
+end function
+
+function OnWatchLaterJobDone(event as object) as void
+    JobSystem.UnobserveCallback(event.getRoSGNode())
+    m.watchLaterJob = invalid
+    info = event.getInfo()
+    heading = Tr(Locale.ContextMenu.SavedToWatchLater)
+    if info.success <> true
+        LogWarn("Save to Watch later failed:", info.error)
+        heading = Tr(Locale.ContextMenu.CouldNotSaveToWatchLater)
+    end if
+    ShowRowListNotification(heading, m.watchLaterVideo)
+    m.watchLaterVideo = invalid
+end function
+
+' A small card that slides in at the top right (the "Added to queue" card, with another heading).
+function ShowRowListNotification(heading as string, video as dynamic) as void
+    notifications = m.videoQueue.notifications
+    if notifications = invalid
+        return
+    end if
+    notification = notifications.findNode("RowListNotification")
+    if notification = invalid
+        notification = notifications.createChild("VideoQueueNotification")
+        notification.id = "RowListNotification"
+    end if
+    notification.heading = heading
+    notification.hintVisible = false
+    if video <> invalid
+        notification.content = video
+    end if
+    notification.show = true
 end function
 
 function OpenVideoDetails(video as object) as void

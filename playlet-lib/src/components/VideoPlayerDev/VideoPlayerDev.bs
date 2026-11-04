@@ -103,6 +103,9 @@ function Initialize()
     m.likeJob = invalid
     m.subscribeJob = invalid
     m.subscriptionStatusFetched = false
+    ' Watch later button: the save request in flight, and whether this video was saved
+    m.watchLaterJob = invalid
+    m.watchLaterSaved = false
     ' endless Shorts: waiting at the end of the queue for the next batch
     m.waitingForShorts = false
     ' app-drawn captions (CC button): remembered across videos and launches, in Playlet's own registry.
@@ -199,6 +202,7 @@ function OnNodeReady()
     end if
     m.buttonRow.captionsOn = m.captionsEnabled
     UpdateSleepTimerLabel(false)
+    UpdateSpeedLabel(false)
     if m.captionsEnabled
         ApplyCaptionSuppression()
     end if
@@ -605,6 +609,10 @@ function ActivateButton(index as integer) as void
         ToggleSubscribe()
     else if index = PlayerCoordinatorLogic.PlayerButton.SleepTimer
         CycleSleepTimer()
+    else if index = PlayerCoordinatorLogic.PlayerButton.Speed
+        CyclePlaybackSpeed()
+    else if index = PlayerCoordinatorLogic.PlayerButton.WatchLater
+        SaveToWatchLater()
     end if
     SyncFocus()
 end function
@@ -829,6 +837,127 @@ end function
 
 ' Each press of the moon steps the timer up: off -> 15 -> 30 -> 60 -> 120 minutes -> off (from a running timer,
 ' to the next step above what's left). The label above the buttons shows what the timer says.
+'-------------------------------------------------------------------------------
+' Playback speed (Speed button): 1x, 1.25x, 1.5x, 1.75x, 2x, 0.5x, 0.75x, then 1x again. Kept for the next
+' videos (on the video queue) until changed. Live streams always play at 1x. Not every Roku can change the speed:
+' then the button says so.
+'-------------------------------------------------------------------------------
+function SpeedSupported() as boolean
+    return m.top.hasField("playbackSpeed")
+end function
+
+function PreferredSpeed() as float
+    speed = ValidFloat(m.videoQueue.preferredPlaybackSpeed)
+    if speed <= 0
+        speed = 1.0
+    end if
+    return speed
+end function
+
+function CyclePlaybackSpeed() as void
+    if not SpeedSupported()
+        m.buttonRow.statusText = Tr(Locale.Player.SpeedNotSupported)
+        m.buttonRow.nudge = true
+        ArmAutoHide()
+        return
+    end if
+    steps = [1.0, 1.25, 1.5, 1.75, 2.0, 0.5, 0.75]
+    current = PreferredSpeed()
+    nextSpeed = 1.0
+    for i = 0 to steps.Count() - 1
+        if Abs(steps[i] - current) < 0.01
+            nextSpeed = steps[(i + 1) mod steps.Count()]
+            exit for
+        end if
+    end for
+    m.videoQueue.preferredPlaybackSpeed = nextSpeed
+    ApplyPlaybackSpeed()
+    UpdateSpeedLabel(true)
+    ArmAutoHide()
+end function
+
+function ApplyPlaybackSpeed() as void
+    if not SpeedSupported()
+        return
+    end if
+    speed = PreferredSpeed()
+    content = m.top.content
+    if content <> invalid and content.Live = true
+        speed = 1.0
+    end if
+    if Abs(ValidFloat(m.top.playbackSpeed) - speed) > 0.01
+        m.top.playbackSpeed = speed
+    end if
+end function
+
+function UpdateSpeedLabel(justChanged as boolean) as void
+    speed = PreferredSpeed()
+    if Abs(speed - 1.0) > 0.01
+        m.buttonRow.statusText = Tr(Locale.Player.SpeedValue).Replace("%1", FormatSpeed(speed))
+    else if justChanged
+        m.buttonRow.statusText = Tr(Locale.Player.SpeedNormal)
+    else
+        m.buttonRow.statusText = ""
+    end if
+end function
+
+' 1.25 -> "1.25x", 2 -> "2x"
+function FormatSpeed(speed as float) as string
+    hundredths = CInt(speed * 100)
+    text = (hundredths \ 100).ToStr()
+    remainder = hundredths mod 100
+    if remainder > 0
+        if remainder mod 10 = 0
+            text += "." + (remainder \ 10).ToStr()
+        else
+            text += "." + Right("0" + remainder.ToStr(), 2)
+        end if
+    end if
+    return text + "x"
+end function
+
+'-------------------------------------------------------------------------------
+' Watch later button: saves the playing video to the account's Watch later playlist (YouTube accounts).
+'-------------------------------------------------------------------------------
+function SaveToWatchLater() as void
+    profile = CurrentProfile()
+    content = m.top.content
+    if profile = invalid or profile.type <> "youtube" or content = invalid or StringUtils.IsNullOrEmpty(content.videoId)
+        m.buttonRow.statusText = Tr(Locale.ContextMenu.CouldNotSaveToWatchLater)
+        m.buttonRow.nudge = true
+        return
+    end if
+    if m.watchLaterSaved or m.watchLaterJob <> invalid
+        m.buttonRow.statusText = Tr(Locale.ContextMenu.SavedToWatchLater)
+        return
+    end if
+    m.watchLaterSaved = true
+    m.buttonRow.watchLaterSaved = true
+    m.buttonRow.statusText = Tr(Locale.ContextMenu.SavedToWatchLater)
+    m.watchLaterJob = JobSystem.CreateCallback(OnWatchLaterJobDone)
+    JobSystem.QueueJob(m.jobQueue, Jobs.WatchLaterJob, {
+        videoId: content.videoId
+        profile: profile
+    }, m.watchLaterJob)
+    ArmAutoHide()
+end function
+
+function OnWatchLaterJobDone(event as object) as void
+    callback = event.getRoSGNode()
+    JobSystem.UnobserveCallback(callback)
+    if m.watchLaterJob = invalid or not m.watchLaterJob.isSameNode(callback)
+        return
+    end if
+    m.watchLaterJob = invalid
+    info = event.getInfo()
+    if not info.success and not info.cancel
+        LogWarn("Save to Watch later failed:", info.error)
+        m.watchLaterSaved = false
+        m.buttonRow.watchLaterSaved = false
+        m.buttonRow.statusText = Tr(Locale.ContextMenu.CouldNotSaveToWatchLater)
+    end if
+end function
+
 function CycleSleepTimer() as void
     steps = [15, 30, 60, 120]
     left = SleepTimerMinutesLeft()
@@ -1135,6 +1264,7 @@ function OnVideoState(event as object) as void
         ' first frame -> the module's ready gate opens; drop the loading overlay.
         if not m.firstFrameSeen
             m.firstFrameSeen = true
+            ApplyPlaybackSpeed()
             m.transport.OnReady()
             m.spinner.mode = SpinMode.Off
             LogInfo("first frame: ready=true, loading overlay off")
@@ -1940,6 +2070,11 @@ function OnClose() as void
     if m.markVideoWatchedJob <> invalid
         m.markVideoWatchedJob.cancel = true
         m.markVideoWatchedJob = invalid
+    end if
+
+    if m.watchLaterJob <> invalid
+        JobSystem.UnobserveCallback(m.watchLaterJob)
+        m.watchLaterJob = invalid
     end if
 
     if m.sponsorBlockSegmentsJob <> invalid

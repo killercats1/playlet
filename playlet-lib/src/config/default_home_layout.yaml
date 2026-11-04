@@ -14,6 +14,27 @@
       apiType: Invidious
       endpoint: auth_recommended
 
+# Videos started but not finished (signed in with YouTube); the row goes away when there are none.
+- title: Continue watching
+  id: continue_watching
+  feedSources:
+    - id: inv_auth_continue_watching
+      title: Continue watching
+      apiType: Invidious
+      endpoint: auth_continue_watching
+
+# YouTube's own home shelves after Recommended, one row each with YouTube's title. "expandRows" turns this entry
+# into that many rows (index 1, 2, ...); rows without a shelf go away.
+- title: More for you
+  id: home_shelves
+  expandRows: 6
+  feedSources:
+    - id: inv_auth_home_shelf
+      title: More for you
+      apiType: Invidious
+      endpoint: auth_home_shelf
+      useResponseTitle: true
+
 # The account's Shorts (signed in with YouTube); hidden with the "Disable Shorts" setting.
 - title: Shorts
   id: shorts

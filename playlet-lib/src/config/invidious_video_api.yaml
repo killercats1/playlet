@@ -210,6 +210,19 @@ auth_shorts:
   url: /api/v1/auth/shorts
   authenticated: true
 
+# Implemented only by Playlet backend: one of the account's YouTube home shelves after Recommended (index: 1, 2...).
+auth_home_shelf:
+  title: More for you
+  url: /api/v1/auth/home_shelf
+  authenticated: true
+  paginationType: Continuation
+
+# Implemented only by Playlet backend: videos from the watch history that were started but not finished.
+auth_continue_watching:
+  title: Continue watching
+  url: /api/v1/auth/continue_watching
+  authenticated: true
+
 # Implemented only by Playlet backend: the YouTube account's YouTube Music recommendations.
 auth_music_recommended:
   title: Recommended music

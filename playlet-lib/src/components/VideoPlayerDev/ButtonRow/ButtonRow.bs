@@ -10,7 +10,7 @@ const TRACKBAR_RIGHT_X = 1212
 
 function Init()
     ' Focus order MUST match PlayerCoordinatorLogic.PlayerButton (playPause=0, next=1, minimize=2, captions=3,
-    ' like=4, dislike=5, subscribe=6, sleepTimer=7).
+    ' like=4, dislike=5, subscribe=6, sleepTimer=7, speed=8, watchLater=9).
     m.buttons = [
         m.top.findNode("PlayPauseButton")
         m.top.findNode("NextButton")
@@ -20,13 +20,15 @@ function Init()
         m.top.findNode("DislikeButton")
         m.top.findNode("SubscribeButton")
         m.top.findNode("SleepTimerButton")
+        m.top.findNode("SpeedButton")
+        m.top.findNode("WatchLaterButton")
     ]
     m.centerCluster = m.top.findNode("CenterCluster")
     m.rightCluster = m.top.findNode("RightCluster")
     LayoutClusters()
     m.top.buttonCount = m.buttons.Count() ' coordinator reads this to clamp focus
 
-    for each field in ["transportMode", "rowFocused", "focusedIndex", "playing", "captionsOn", "likeState", "subscribed", "sleepTimerOn"]
+    for each field in ["transportMode", "rowFocused", "focusedIndex", "playing", "captionsOn", "likeState", "subscribed", "sleepTimerOn", "watchLaterSaved"]
         m.top.ObserveField(field, FuncName(Repaint))
     end for
     m.top.ObserveField("nudge", FuncName(OnNudge))
@@ -75,6 +77,7 @@ function Repaint() as void
     m.buttons[5].toggleState = m.top.likeState = 2 ' filled thumb while disliked
     m.buttons[6].toggleState = m.top.subscribed ' check mark while subscribed
     m.buttons[7].toggleState = m.top.sleepTimerOn ' filled moon while a sleep timer runs
+    m.buttons[9].toggleState = m.top.watchLaterSaved ' filled clock once saved to Watch later
 
     for i = 0 to m.buttons.Count() - 1
         m.buttons[i].focused = m.top.rowFocused and i = m.top.focusedIndex

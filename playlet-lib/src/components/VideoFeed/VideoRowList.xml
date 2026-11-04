@@ -21,6 +21,7 @@
         <function name="OpenVideoChannel" />
         <function name="OpenVideoDetails" />
         <function name="SendFeedback" />
+        <function name="SaveToWatchLater" />
         <function name="OpenPlaylistChannel" />
         <function name="Refresh" />
     </interface>

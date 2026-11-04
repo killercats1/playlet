@@ -15,12 +15,12 @@ namespace HomeScreenUtils
         end for
 
         if preferences = invalid
-            return feed
+            return ExpandRows(feed)
         end if
 
         homeLayout = preferences["misc.home_screen_layout"]
         if not IsArray(homeLayout) or homeLayout.Count() = 0
-            return feed
+            return ExpandRows(feed)
         end if
 
         feedItems = {}
@@ -47,7 +47,35 @@ namespace HomeScreenUtils
             end if
         end for
 
-        return filteredFeed
+        return ExpandRows(filteredFeed)
+    end function
+
+    ' A section with "expandRows": N becomes N rows, each asking for its own index (the Home shelves).
+    function ExpandRows(feed as object) as object
+        expanded = []
+        for each item in feed
+            count = ValidInt(item.expandRows)
+            if count <= 0
+                expanded.Push(item)
+                continue for
+            end if
+            for i = 1 to count
+                copy = StringUtils.ParseJsonSafe(FormatJson(item))
+                copy.Delete("expandRows")
+                copy.id = `${item.id}_${i}`
+                for each feedSource in copy.feedSources
+                    feedSource.id = `${feedSource.id}_${i}`
+                    queryParams = feedSource.queryParams
+                    if not IsAssociativeArray(queryParams)
+                        queryParams = {}
+                    end if
+                    queryParams.index = i.ToStr()
+                    feedSource.queryParams = queryParams
+                end for
+                expanded.Push(copy)
+            end for
+        end for
+        return expanded
     end function
 
 end namespace

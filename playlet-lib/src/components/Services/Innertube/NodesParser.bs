@@ -300,9 +300,29 @@ namespace Innertube
             end if
         end if
 
-        ' TODO: handle shelfRenderer.title
-        ' TODO: handle shelfRenderer.headerRenderer.shelfHeaderRenderer.avatarLockup.avatarLockupRenderer.title
+        ' On the TV home and topic pages each shelf ("Recommended", "Because you watched X", a channel's latest,
+        ' Mixes...) becomes its own feed, titled like in the TV app. Elsewhere shelves keep the old behavior.
+        browseId = ValidString(context.browseId)
+        if browseId = "FEwhat_to_watch" or browseId.StartsWith("FEtopics_")
+            if context.currentFeed <> invalid and context.currentFeed.items.Count() > 0
+                StartNewFeed("", context)
+            end if
+            context.shelfTitle = ShelfTitle(nodeData)
+        end if
+
         return nodeData["content"]
+    end function
+
+    function ShelfTitle(nodeData as object) as string
+        header = ObjectUtils.Dig(nodeData, ["headerRenderer", "shelfHeaderRenderer"])
+        title = ParseText(ObjectUtils.Dig(header, ["title"]))
+        if title = ""
+            title = ParseText(ObjectUtils.Dig(header, ["avatarLockup", "avatarLockupRenderer", "title"]))
+        end if
+        if title = ""
+            title = ParseText(nodeData["title"])
+        end if
+        return title
     end function
 
     function ParseRichShelfRenderer(nodeData as object, _context as object) as object
@@ -467,7 +487,7 @@ namespace Innertube
             video["premiereTimestamp"] = premiereTimestamp
         end if
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -553,7 +573,7 @@ namespace Innertube
             video["premiereTimestamp"] = premiereTimestamp
         end if
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -651,7 +671,7 @@ namespace Innertube
             video["isUpcoming"] = true
             video["premiereTimestamp"] = premiereTimestamp
         end if
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -691,7 +711,7 @@ namespace Innertube
             "publishedText": publishedText
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -721,7 +741,7 @@ namespace Innertube
             "publishedText": ParseText(nodeData["publishedTimeText"])
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -771,7 +791,7 @@ namespace Innertube
             "videoInfo": videoInfo
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -838,7 +858,7 @@ namespace Innertube
             "isUpcoming": isUpcoming
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -871,7 +891,7 @@ namespace Innertube
             "videoThumbnails": ObjectUtils.Dig(nodeData, ["thumbnail", "thumbnails"])
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1219,7 +1239,7 @@ namespace Innertube
             "liveNow": liveNow
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1299,7 +1319,7 @@ namespace Innertube
             "isShort": true
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1392,7 +1412,7 @@ namespace Innertube
             "isShort": true
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1599,7 +1619,7 @@ namespace Innertube
             video["authorId"] = authorId
         end if
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1649,7 +1669,7 @@ namespace Innertube
             video["authorId"] = authorId
         end if
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -1999,7 +2019,7 @@ namespace Innertube
             "lengthText": lengthText
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -2053,7 +2073,7 @@ namespace Innertube
             "lengthText": lengthText
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -2098,7 +2118,7 @@ namespace Innertube
             "lengthText": lengthText
         }
 
-        AddFeedbackTokens(video, nodeData)
+        AnnotateFeedItem(video, nodeData)
         PushFeedItem(video, context)
         return invalid
     end function
@@ -2214,6 +2234,48 @@ namespace Innertube
     ' YouTube's "Not interested" / "Don't recommend channel" feedback tokens from an item's menu (the TV
     ' long-press menu, the web overflow menu), for Playlet's options menu. The menu labels pick them (English);
     ' when no label matches, the first token is taken as "Not interested".
+    ' Called for every video added to a feed: Not interested tokens, and a members-only mark (feeds can hide those).
+    function AnnotateFeedItem(item as object, nodeData as object) as void
+        AddFeedbackTokens(item, nodeData)
+        if HasMembersOnlyBadge(nodeData, 14)
+            item["membersOnly"] = true
+        end if
+    end function
+
+    ' A "Members only" badge anywhere in the item (badge styles differ between the web, TV and lockup layouts).
+    function HasMembersOnlyBadge(data as dynamic, depth as integer) as boolean
+        if depth < 0
+            return false
+        end if
+        if IsAssociativeArray(data)
+            for each key in data
+                value = data[key]
+                if IsString(value)
+                    if key = "style" or key = "iconType" or key = "badgeStyle"
+                        upper = UCase(value)
+                        if upper.InStr("MEMBERS_ONLY") <> -1 or upper.InStr("MEMBER_ONLY") <> -1 or upper.InStr("MEMBERS_FIRST") <> -1
+                            return true
+                        end if
+                    else if key = "label" or key = "text" or key = "simpleText" or key = "content"
+                        lower = LCase(value)
+                        if lower = "members only" or lower = "members first"
+                            return true
+                        end if
+                    end if
+                else if HasMembersOnlyBadge(value, depth - 1)
+                    return true
+                end if
+            end for
+        else if IsArray(data)
+            for each child in data
+                if HasMembersOnlyBadge(child, depth - 1)
+                    return true
+                end if
+            end for
+        end if
+        return false
+    end function
+
     function AddFeedbackTokens(item as object, nodeData as object) as void
         found = []
         CollectFeedbackTokens(nodeData, found, "", 16)
@@ -2278,6 +2340,9 @@ namespace Innertube
                 "title": ""
                 "items": []
             }
+        end if
+        if context.currentFeed.title = "" and not StringUtils.IsNullOrEmpty(context.shelfTitle)
+            context.currentFeed.title = context.shelfTitle
         end if
         context.currentFeed.items.Push(item)
     end function

@@ -953,11 +953,13 @@ namespace Tests
             m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> like
             m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> dislike
             m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> subscribe
-            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> sleep timer (rightmost)
+            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> sleep timer
+            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> speed
+            m.top.callFunc("TestKey", RemoteKeys.Right, true) ' -> watch later (rightmost)
             m.top.callFunc("TestKey", RemoteKeys.Right, true) ' clamped at the right end
             snap = m.Snap()
             m.assertEqual(snap.nudgeCount, 2)
-            m.assertEqual(snap.focusedButton, 7, "the clamp held the highlight at the end")
+            m.assertEqual(snap.focusedButton, 9, "the clamp held the highlight at the end")
         end function
 
         ' Down at the bar tier (the bottom, and the default on reveal) is a no-op: consumed, no nudge.
@@ -1094,7 +1096,7 @@ namespace Tests
                 classified[name] = "node"
             end for
             ' in-flight job handles.
-            for each name in ["videoContentJob", "sponsorBlockSegmentsJob", "markVideoWatchedJob", "likeJob", "subscribeJob"]
+            for each name in ["videoContentJob", "sponsorBlockSegmentsJob", "markVideoWatchedJob", "likeJob", "subscribeJob", "watchLaterJob"]
                 classified[name] = "job"
             end for
             ' STATE AXES — discrete coordinator state; each needs its transitions covered by a seam test.
@@ -1102,7 +1104,7 @@ namespace Tests
                 classified[name] = "axis"
             end for
             ' flags / scratch — one-shot latches and counters with a single consuming path.
-            for each name in ["onCloseCalled", "ignoreNextFinished", "videoPlayedSuccessfully", "firstFrameSeen", "showFullScreenHint", "repauseAfterSeek", "loadingSetSeekMs", "watchTimeMarker", "reportWatchTime", "errorDialogNode", "lastCommitSeq", "lastFinishSeq", "liveAstSeconds", "liveFallbackEdgeMs", "liveFallbackAtSeconds", "liveBadgeHoldActive", "captionsEnabled", "upNextOpen", "likeState", "subscriptionStatusFetched", "waitingForShorts"]
+            for each name in ["onCloseCalled", "ignoreNextFinished", "videoPlayedSuccessfully", "firstFrameSeen", "showFullScreenHint", "repauseAfterSeek", "loadingSetSeekMs", "watchTimeMarker", "reportWatchTime", "errorDialogNode", "lastCommitSeq", "lastFinishSeq", "liveAstSeconds", "liveFallbackEdgeMs", "liveFallbackAtSeconds", "liveBadgeHoldActive", "captionsEnabled", "upNextOpen", "likeState", "subscriptionStatusFetched", "waitingForShorts", "watchLaterSaved"]
                 classified[name] = "flag"
             end for
             ' NOT coordinator state — node-scope + test-environment entries, pinned EXPLICITLY (no hidden
