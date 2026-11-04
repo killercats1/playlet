@@ -768,6 +768,9 @@ namespace Http
                             continue for
                         end if
                         for each item in feed.items
+                            if channels.Count() >= 100
+                                exit for
+                            end if
                             if IsAssociativeArray(item) and item.type = "channel" and IsString(item.authorId) and not seen.DoesExist(item.authorId)
                                 seen[item.authorId] = true
                                 ' these pages don't say how many videos a channel has: no "0 videos" on the tile
