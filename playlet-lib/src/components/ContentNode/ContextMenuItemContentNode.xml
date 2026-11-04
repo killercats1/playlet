@@ -1,7 +1,0 @@
-<component name="ContextMenuItemContentNode" extends="ContentNode">
-    <interface>
-        <field id="node" type="node" />
-        <field id="func" type="string" />
-        <field id="args" type="array" />
-    </interface>
-</component>

@@ -1,6 +1,0 @@
-<component name="OnScreenCodeDialog" extends="SimpleDialog">
-    <interface>
-        <field id="purpose" type="string" />
-        <function name="Consume" />
-    </interface>
-</component>

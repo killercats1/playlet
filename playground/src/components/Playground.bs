@@ -1,3 +1,0 @@
-function Init()
-    print "Playground Init"
-end function

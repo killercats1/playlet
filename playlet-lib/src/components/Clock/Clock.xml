@@ -1,2 +1,0 @@
-<component name="Clock" extends="Label" includes="Disposable">
-</component>

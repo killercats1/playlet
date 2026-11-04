@@ -1,5 +1,0 @@
-<component name="BookmarkContentNode" extends="ContentNode">
-    <interface>
-        <field id="feedSource" type="assocarray" />
-    </interface>
-</component>

@@ -1,7 +1,0 @@
-{
-    "extends": "bsconfig.json",
-    "createPackage": false,
-    "deploy": false,
-    "retainStagingDir": false,
-    "sourceMap": false
-}

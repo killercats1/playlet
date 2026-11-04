@@ -1,7 +1,0 @@
-import "pkg:/components/Screens/HomeScreen/RowsScreenLogic.bs"
-
-function Init()
-    m.top.focusable = true
-    m.rowList = m.top.FindNode("rowList")
-    m.rowList.screen = m.top
-end function

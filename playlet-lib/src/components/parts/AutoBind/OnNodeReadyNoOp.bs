@@ -1,3 +1,0 @@
-' A no op function to silence BS1067 errors
-function OnNodeReady()
-end function

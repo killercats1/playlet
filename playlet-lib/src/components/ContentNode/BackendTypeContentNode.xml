@@ -1,5 +1,0 @@
-<component name="BackendTypeContentNode" extends="ContentNode">
-    <interface>
-        <field id="backendLogoUri" type="uri" />
-    </interface>
-</component>

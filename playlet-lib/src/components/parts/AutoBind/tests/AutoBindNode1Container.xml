@@ -1,5 +1,0 @@
-<component name="AutoBindNode1Container" extends="Group" includes="AutoBind">
-    <children>
-        <AutoBindNode1 id="AutoBindNode1" reference2=".." />
-    </children>
-</component>
