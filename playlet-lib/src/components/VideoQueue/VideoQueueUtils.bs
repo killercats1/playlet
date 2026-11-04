@@ -1,3 +1,4 @@
+import "pkg:/components/Services/FeedFilters/FeedFilters.bs"
 import "pkg:/components/Services/Invidious/InvidiousToContentNode.bs"
 import "pkg:/source/utils/FocusManagement.bs"
 import "pkg:/source/utils/Logging.bs"
@@ -134,29 +135,56 @@ namespace VideoQueueUtils
             return false
         end if
 
-        queueContent = videoQueue.content
-        for each recommendedVideo in recommendedVideos
-            if recommendedVideo = invalid
-                continue for
-            end if
-            videoId = recommendedVideo.videoId
-            if videoId = invalid
-                continue for
-            end if
+        recommendedVideo = VideoQueueUtils.PickRecommended(recommendedVideos, videoQueue.content)
+        if recommendedVideo = invalid
+            return false
+        end if
 
-            existingVideo = queueContent.findNode(videoId)
-            if existingVideo <> invalid
-                continue for
-            end if
+        LogInfo(`Playing next recommended video (${recommendedVideo.videoId})`)
+        instance = invidiousNode@.GetInstance()
+        node = InvidiousContent.ToVideoContentNode(invalid, recommendedVideo, instance)
+        videoQueue.playVideo = node
+        return true
+    end function
 
-            LogInfo(`Playing next recommended video (${videoId})`)
-            instance = invidiousNode@.GetInstance()
-            node = InvidiousContent.ToVideoContentNode(invalid, recommendedVideo, instance)
-            videoQueue.playVideo = node
-            return true
+    ' The related video autoplay plays: the first one not already in the queue that can be watched (not
+    ' members-only, not marked Not interested / Don't recommend), preferring one not already watched to the end.
+    function PickRecommended(recommendedVideos as object, queueContent as dynamic) as dynamic
+        if not IsArray(recommendedVideos)
+            return invalid
+        end if
+        hidden = FeedFilters.LoadLookup()
+        for each skipWatched in [true, false]
+            for each video in recommendedVideos
+                if not IsAssociativeArray(video) or not IsString(video.videoId) or video.videoId = ""
+                    continue for
+                end if
+                if queueContent <> invalid and queueContent.findNode(video.videoId) <> invalid
+                    continue for
+                end if
+                if VideoQueueUtils.IsWatchableRecommendation(video, hidden, skipWatched)
+                    return video
+                end if
+            end for
         end for
+        return invalid
+    end function
 
-        return false
+    ' hidden: FeedFilters.LoadLookup()
+    function IsWatchableRecommendation(video as object, hidden as object, skipWatched as boolean) as boolean
+        if video.membersOnly = true
+            return false
+        end if
+        if hidden.videos.DoesExist(video.videoId)
+            return false
+        end if
+        if IsString(video.authorId) and hidden.channels.DoesExist(video.authorId)
+            return false
+        end if
+        if skipWatched and IsNumber(video.percentDurationWatched) and video.percentDurationWatched >= 90
+            return false
+        end if
+        return true
     end function
 
 end namespace

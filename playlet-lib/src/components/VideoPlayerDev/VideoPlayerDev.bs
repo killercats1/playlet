@@ -2,6 +2,7 @@ import "pkg:/components/ContentNode/ProfileContentAuthTokenUtils.types.bs"
 import "pkg:/components/Dialog/DialogUtils.bs"
 import "pkg:/components/JobSystem/Jobs.bs"
 import "pkg:/components/JobSystem/JobSystem.bs"
+import "pkg:/components/Services/FeedFilters/FeedFilters.bs"
 import "pkg:/components/Services/Innertube/Constants.bs"
 import "pkg:/components/Services/Invidious/InvidiousToContentNode.bs"
 import "pkg:/components/VideoPlayer/Lounge.bs"
@@ -809,8 +810,10 @@ function BuildUpNextContent() as dynamic
 
     instance = m.invidious@.GetInstance()
     videos = CreateObject("roSGNode", "ContentNode")
+    ' no members-only videos or ones marked Not interested in the strip either
+    hidden = FeedFilters.LoadLookup()
     for each item in metadata.recommendedVideos
-        if IsAssociativeArray(item) and IsString(item.videoId) and item.videoId <> ""
+        if IsAssociativeArray(item) and IsString(item.videoId) and item.videoId <> "" and VideoQueueUtils.IsWatchableRecommendation(item, hidden, false)
             videos.appendChild(InvidiousContent.ToVideoContentNode(invalid, item, instance))
             if videos.getChildCount() >= 12
                 exit for
@@ -2149,19 +2152,7 @@ function NextAutoplayVideo() as dynamic
     if content = invalid or not content.hasField("metadata") or not IsAssociativeArray(content.metadata)
         return invalid
     end if
-    recommendedVideos = content.metadata.recommendedVideos
-    if not IsArray(recommendedVideos)
-        return invalid
-    end if
-    queueContent = m.videoQueue.content
-    for each video in recommendedVideos
-        if IsAssociativeArray(video) and IsString(video.videoId) and video.videoId <> ""
-            if queueContent = invalid or queueContent.findNode(video.videoId) = invalid
-                return video
-            end if
-        end if
-    end for
-    return invalid
+    return VideoQueueUtils.PickRecommended(content.metadata.recommendedVideos, m.videoQueue.content)
 end function
 
 function OnAutoplayCountdownClosed(event as object) as void
