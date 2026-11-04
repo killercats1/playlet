@@ -104,6 +104,8 @@ function Initialize()
     m.subscribeJob = invalid
     m.subscriptionStatusFetched = false
     m.likeStatusFetched = false
+    ' the autoplay countdown dialog while it shows
+    m.upNextDialog = invalid
     ' Watch later button: the save request in flight, and whether this video was saved
     m.watchLaterJob = invalid
     m.watchLaterSaved = false
@@ -876,11 +878,25 @@ end function
 ' videos (on the video queue) until changed. Live streams always play at 1x. Not every Roku can change the speed:
 ' then the button says so.
 '-------------------------------------------------------------------------------
+function RememberSpeed() as boolean
+    return m.preferences <> invalid and m.preferences["playback.remember_speed"] = true
+end function
+
 function SpeedSupported() as boolean
     return m.top.hasField("playbackSpeed")
 end function
 
 function PreferredSpeed() as float
+    ' "Remember playback speed": the first video of a session starts at the speed saved last time
+    if m.videoQueue.playbackSpeedRestored <> true
+        m.videoQueue.playbackSpeedRestored = true
+        if RememberSpeed()
+            saved = ValidString(RegistryUtils.Read(RegistryUtils.PLAYBACK_SPEED)).ToFloat()
+            if saved >= 0.25 and saved <= 4
+                m.videoQueue.preferredPlaybackSpeed = saved
+            end if
+        end if
+    end if
     speed = ValidFloat(m.videoQueue.preferredPlaybackSpeed)
     if speed <= 0
         speed = 1.0
@@ -905,6 +921,9 @@ function CyclePlaybackSpeed() as void
         end if
     end for
     m.videoQueue.preferredPlaybackSpeed = nextSpeed
+    if RememberSpeed()
+        RegistryUtils.Write(RegistryUtils.PLAYBACK_SPEED, nextSpeed.ToStr())
+    end if
     ApplyPlaybackSpeed()
     UpdateSpeedLabel(true)
     ArmAutoHide()
@@ -2013,6 +2032,10 @@ function OnPlaybackFinished() as void
         FlipShort(true)
         return
     end if
+    ' autoplay of a related video: say what's next first, with a few seconds to cancel
+    if ShowAutoplayCountdown()
+        return
+    end if
     if not VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences)
         ClosePlayer()
     end if
@@ -2075,6 +2098,72 @@ function OnErrorDialogResponse(event as object) as void
     if not shouldPlayNext or not VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences)
         ClosePlayer()
     end if
+end function
+
+'-------------------------------------------------------------------------------
+' Autoplay countdown ("Autoplay countdown" setting, on by default): when the queue is done and autoplay is about
+' to pick a related video, a dialog names it and counts down; Play now / the countdown play it, Cancel or Back
+' close the player.
+'-------------------------------------------------------------------------------
+function ShowAutoplayCountdown() as boolean
+    if m.preferences = invalid or m.preferences["playback.autoplay_countdown"] = false
+        return false
+    end if
+    nextVideo = NextAutoplayVideo()
+    if nextVideo = invalid
+        return false
+    end if
+    message = ValidString(nextVideo.title)
+    if IsString(nextVideo.author) and nextVideo.author <> ""
+        message += `\n` + nextVideo.author
+    end if
+    buttons = [Tr(Locale.Player.PlayNow), Tr(Locale.Buttons.Cancel)]
+    dialog = DialogUtils.ShowTimedDialogButtons(message, Tr(Locale.Player.UpNext), buttons, 0, 8)
+    if dialog = invalid
+        return false
+    end if
+    m.upNextDialog = dialog
+    dialog.observeFieldScoped("wasClosed", FuncName(OnAutoplayCountdownClosed))
+    return true
+end function
+
+' The related video autoplay would play (VideoQueueUtils.PlayNext's pick), or invalid when it wouldn't autoplay.
+function NextAutoplayVideo() as dynamic
+    if m.videoQueue.hasNext or m.preferences["playback.autoplay"] <> true
+        return invalid
+    end if
+    content = m.top.content
+    if content = invalid or not content.hasField("metadata") or not IsAssociativeArray(content.metadata)
+        return invalid
+    end if
+    recommendedVideos = content.metadata.recommendedVideos
+    if not IsArray(recommendedVideos)
+        return invalid
+    end if
+    queueContent = m.videoQueue.content
+    for each video in recommendedVideos
+        if IsAssociativeArray(video) and IsString(video.videoId) and video.videoId <> ""
+            if queueContent = invalid or queueContent.findNode(video.videoId) = invalid
+                return video
+            end if
+        end if
+    end for
+    return invalid
+end function
+
+function OnAutoplayCountdownClosed(event as object) as void
+    dialog = event.getRoSGNode()
+    dialog.unobserveFieldScoped("wasClosed")
+    if m.upNextDialog <> invalid and dialog.isSameNode(m.upNextDialog)
+        m.upNextDialog = invalid
+    end if
+    if m.onCloseCalled = true
+        return
+    end if
+    if dialog.actualButtonSelected = 0 and VideoQueueUtils.PlayNext(m.videoQueue, m.invidious, m.preferences)
+        return
+    end if
+    ClosePlayer()
 end function
 
 function ClosePlayer() as void
@@ -2146,6 +2235,12 @@ function OnClose() as void
     if m.watchLaterJob <> invalid
         JobSystem.UnobserveCallback(m.watchLaterJob)
         m.watchLaterJob = invalid
+    end if
+
+    if m.upNextDialog <> invalid
+        m.upNextDialog.unobserveFieldScoped("wasClosed")
+        m.upNextDialog.close = true
+        m.upNextDialog = invalid
     end if
 
     if m.sponsorBlockSegmentsJob <> invalid

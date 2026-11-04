@@ -1648,5 +1648,25 @@
         <source>Extra large</source>
         <translation>Extra large</translation>
     </message>
+    <message>
+        <source>Play now</source>
+        <translation>Play now</translation>
+    </message>
+    <message>
+        <source>Autoplay countdown</source>
+        <translation>Autoplay countdown</translation>
+    </message>
+    <message>
+        <source>Before autoplay starts a related video, show what's up next for a few seconds so you can cancel.</source>
+        <translation>Before autoplay starts a related video, show what&apos;s up next for a few seconds so you can cancel.</translation>
+    </message>
+    <message>
+        <source>Remember playback speed</source>
+        <translation>Remember playback speed</translation>
+    </message>
+    <message>
+        <source>Start at the speed you last picked with the player's Speed button, also after Playlet restarts.</source>
+        <translation>Start at the speed you last picked with the player&apos;s Speed button, also after Playlet restarts.</translation>
+    </message>
 </context>
 </TS>

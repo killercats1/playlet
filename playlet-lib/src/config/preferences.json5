@@ -12,6 +12,20 @@
         defaultValue: true,
       },
       {
+        displayText: "Autoplay countdown",
+        key: "playback.autoplay_countdown",
+        description: "Before autoplay starts a related video, show what's up next for a few seconds so you can cancel.",
+        type: "boolean",
+        defaultValue: true,
+      },
+      {
+        displayText: "Remember playback speed",
+        key: "playback.remember_speed",
+        description: "Start at the speed you last picked with the player's Speed button, also after Playlet restarts.",
+        type: "boolean",
+        defaultValue: false,
+      },
+      {
         displayText: "Preferred quality",
         key: "playback.preferred_quality",
         description: "Preferred video quality",

@@ -340,6 +340,10 @@ namespace Locale
         Medium = "Medium"
         Large = "Large"
         ExtraLarge = "Extra large"
+        AutoplayCountdown = "Autoplay countdown"
+        AutoplayCountdownDescription = "Before autoplay starts a related video, show what's up next for a few seconds so you can cancel."
+        RememberSpeed = "Remember playback speed"
+        RememberSpeedDescription = "Start at the speed you last picked with the player's Speed button, also after Playlet restarts."
     end enum
 
     @locale
@@ -477,6 +481,7 @@ namespace Locale
         SpeedNotSupported = "This TV can't change the playback speed"
         SpeedValue = "Speed: %1"
         SpeedNormal = "Speed: Normal"
+        PlayNow = "Play now"
     end enum
 
     @locale

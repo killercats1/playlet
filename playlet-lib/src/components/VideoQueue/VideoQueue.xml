@@ -26,6 +26,8 @@
         <field id="sleepAfterVideo" type="boolean" value="false" />
         <!-- Playback speed picked with the player's Speed button, kept for the next videos (1 = normal). -->
         <field id="preferredPlaybackSpeed" type="float" value="1.0" />
+        <!-- the saved speed ("Remember playback speed") was read in this session -->
+        <field id="playbackSpeedRestored" type="boolean" value="false" />
 
         <!-- Endless Shorts: the player asks for more at the end of the queue, and waits while shortsLoading. -->
         <field id="loadMoreShorts" type="boolean" alwaysNotify="true" onChange="OnLoadMoreShorts" />

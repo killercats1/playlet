@@ -14,6 +14,7 @@ namespace RegistryUtils
     const INNERTUBE_POTOKENS = "innertube_potokens"
     const LAST_LOUNGE_DATA = "last_lounge_data"
     const CAPTIONS_ENABLED = "captions_enabled"
+    const PLAYBACK_SPEED = "playback_speed"
 
     ' "invidious_instances" is deprecated, but we keep for migration purposes
     const INVIDIOUS_INSTANCES = "invidious_instances"
