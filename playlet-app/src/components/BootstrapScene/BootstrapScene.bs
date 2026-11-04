@@ -4,6 +4,8 @@ import "pkg:/source/Logger.bs"
 import "pkg:/source/Manifest.bs"
 import "pkg:/source/Registry.bs"
 
+const UPDATE_TIMEOUT_SECONDS = 15
+
 function Init() as void
     m.scene = m.top.getScene()
     m.top.backgroundColor = "#161616FF"
@@ -20,6 +22,13 @@ function Init() as void
     m.playletLibUrls = GetPlayletLibUrls()
     m.playletLibUrlIndex = 0
 
+    ' a download that hangs (slow or no internet) gives up after this and the next url is tried
+    m.loadTimeout = m.top.createChild("Timer")
+    m.loadTimeout.duration = UPDATE_TIMEOUT_SECONDS
+    m.loadTimeout.repeat = false
+    ' bs:disable-next-line NO_OBSERVE_STRING_CALLBACK
+    m.loadTimeout.observeField("fire", "OnLoadTimeout")
+
     LoadPlayletLib()
 end function
 
@@ -33,12 +42,17 @@ function GetPlayletLibUrls() as object
             return [debug]
         #end if
     #else
-        ' This fork only ever runs the lib bundled in the package: it never downloads the upstream
-        ' release from GitHub, and never loads a lib from a URL saved in the registry (clearing any
-        ' left there by another build).
+        ' Auto-update: this fork's latest build, from its own GitHub repo (tv-updates branch), then the lib
+        ' bundled in the package when that can't be loaded. It never downloads the upstream release, and
+        ' never loads a lib from a URL saved in the registry (clearing any left there by another build).
         Registry.DeleteKey("playlet_lib_urls", "Playlet")
-        embedded = { type: "embedded-zip", link: Manifest.ReadValue("playlet_lib_zip_embedded_url") }
-        return [embedded]
+        urls = []
+        updateUrl = Manifest.ReadValue("playlet_lib_zip_update_url")
+        if updateUrl <> invalid and updateUrl <> ""
+            urls.push({ type: "update-zip", link: updateUrl })
+        end if
+        urls.push({ type: "embedded-zip", link: Manifest.ReadValue("playlet_lib_zip_embedded_url") })
+        return urls
     #end if
 end function
 
@@ -53,12 +67,30 @@ function LoadPlayletLib() as void
     end if
 
     RemoveComponentLibrary()
-    uri = m.playletLibUrls[m.playletLibUrlIndex].link
+    libUrl = m.playletLibUrls[m.playletLibUrlIndex]
+    uri = libUrl.link
+    if libUrl.type = "update-zip"
+        ' a fresh download every launch, never a cached copy
+        uri += "?launch=" + CreateObject("roDateTime").AsSeconds().ToStr()
+        m.loadTimeout.control = "start"
+    end if
     LoadComponentLibrary(uri)
+end function
+
+function OnLoadTimeout() as void
+    if m.lib = invalid or m.lib.loadStatus = "ready"
+        return
+    end if
+    Logger.Log(`Playlet lib download timed out after ${UPDATE_TIMEOUT_SECONDS} s, trying the next url`)
+    m.playletLibUrlIndex += 1
+    LoadPlayletLib()
 end function
 
 function OnLoadStatusChanged() as void
     libUrl = m.playletLibUrls[m.playletLibUrlIndex]
+    if m.lib.loadStatus = "ready" or m.lib.loadStatus = "failed"
+        m.loadTimeout.control = "stop"
+    end if
     if m.lib.loadStatus = "ready"
         RemoveComponentLibrary()
         Logger.Log(`Playlet lib loaded from ${libUrl.link} in ${m.timer.TotalMilliseconds()} ms`)
