@@ -1692,5 +1692,9 @@
         <source>That didn't work, try again</source>
         <translation>That didn&apos;t work, try again</translation>
     </message>
+    <message>
+        <source>(saved copy)</source>
+        <translation>(saved copy)</translation>
+    </message>
 </context>
 </TS>

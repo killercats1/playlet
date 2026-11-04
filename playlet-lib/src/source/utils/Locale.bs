@@ -12,6 +12,7 @@ namespace Locale
         Remote = "Remote"
         Info = "Info"
         BuiltIn = "(built-in)"
+        SavedCopy = "(saved copy)"
     end enum
 
     @locale

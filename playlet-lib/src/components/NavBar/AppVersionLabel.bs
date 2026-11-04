@@ -24,6 +24,9 @@ function GetAppVersion() as string
         ' auto-update: the download didn't load, this is the copy inside the installed app
         if libUrlType = "embedded-zip"
             version += " " + Tr(Locale.NavBar.BuiltIn)
+        else if libUrlType = "update-zip-plain"
+            ' the update from the plain address, which the TV may have kept from an earlier launch
+            version += " " + Tr(Locale.NavBar.SavedCopy)
         end if
     end if
 

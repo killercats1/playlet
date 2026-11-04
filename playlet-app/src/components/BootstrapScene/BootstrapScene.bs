@@ -50,7 +50,10 @@ function GetPlayletLibUrls() as object
         urls = []
         updateUrl = Manifest.ReadValue("playlet_lib_zip_update_url")
         if updateUrl <> invalid and updateUrl <> ""
-            urls.push({ type: "update-zip", link: updateUrl })
+            ' a new address every launch (the TV keeps a copy per address, so the plain one kept giving the old
+            ' build), still ending in ".zip"; then the plain address if the TV refuses that one
+            urls.push({ type: "update-zip", link: updateUrl, cacheBust: true })
+            urls.push({ type: "update-zip-plain", link: updateUrl })
         end if
         urls.push({ type: "embedded-zip", link: Manifest.ReadValue("playlet_lib_zip_embedded_url") })
         return urls
@@ -70,9 +73,10 @@ function LoadPlayletLib() as void
     RemoveComponentLibrary()
     libUrl = m.playletLibUrls[m.playletLibUrlIndex]
     uri = libUrl.link
-    if libUrl.type = "update-zip"
-        ' the plain url: the library loader goes by the ".zip" ending (a query string after it made the load
-        ' fail on the TV, falling back to the embedded lib every time)
+    if libUrl.cacheBust = true
+        uri += "?launch=" + CreateObject("roDateTime").AsSeconds().ToStr() + "&file=.zip"
+    end if
+    if libUrl.type = "update-zip" or libUrl.type = "update-zip-plain"
         m.loadTimeout.control = "start"
     end if
     LoadComponentLibrary(uri)
@@ -82,8 +86,9 @@ function OnLoadTimeout() as void
     if m.lib = invalid or m.lib.loadStatus = "ready"
         return
     end if
-    Logger.Log(`Playlet lib download timed out after ${UPDATE_TIMEOUT_SECONDS} s, trying the next url`)
-    m.playletLibUrlIndex += 1
+    Logger.Log(`Playlet lib download timed out after ${UPDATE_TIMEOUT_SECONDS} s, using the embedded lib`)
+    ' a slow download would be just as slow from the other address: straight to the embedded lib
+    m.playletLibUrlIndex = m.playletLibUrls.Count() - 1
     LoadPlayletLib()
 end function
 
