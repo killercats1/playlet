@@ -151,6 +151,7 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
 
     if rowItem.type = "video"
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.PlayVideo), m.videoQueue, "FuncPlayVideo", [rowItem]))
+        options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.PlayNext), m.videoQueue, "FuncPlayNextVideo", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.QueueVideo), m.videoQueue, "FuncAddToQueueVideo", [rowItem]))
         options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.VideoDetails), m.top, "OpenVideoDetails", [rowItem]))
         ' YouTube feedback, when the feed item carried the tokens and a YouTube account is signed in
@@ -162,7 +163,19 @@ function GetContextMenuOptionsForItem(rowItem as object) as object
             if not StringUtils.IsNullOrEmpty(rowItem.dontRecommendChannelToken)
                 options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.DontRecommendChannel), m.top, "SendFeedback", [rowItem, "channel"]))
             end if
-            options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.SaveToWatchLater), m.top, "SaveToWatchLater", [rowItem]))
+            ' rows of the account's lists offer taking the video out of that list
+            rowFeedId = RowFeedSourceId(rowItem)
+            if rowFeedId = "inv_auth_watch_later"
+                options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.RemoveFromWatchLater), m.top, "RemoveFromList", [rowItem, "watchLater"]))
+            else
+                options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.SaveToWatchLater), m.top, "SaveToWatchLater", [rowItem]))
+            end if
+            if rowFeedId = "inv_auth_liked_videos"
+                options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.RemoveFromLikedVideos), m.top, "RemoveFromList", [rowItem, "liked"]))
+            end if
+            if not StringUtils.IsNullOrEmpty(rowItem.removeFromHistoryToken)
+                options.push(ContextMenuUtils.CreateOption(Tr(Locale.ContextMenu.RemoveFromHistory), m.top, "RemoveFromList", [rowItem, "history"]))
+            end if
         end if
 
         authorId = rowItem.authorId
@@ -279,6 +292,45 @@ function SendFeedback(video as object, kind as string) as void
     else
         ShowRowListNotification(Tr(Locale.ContextMenu.VideoHidden), video)
     end if
+end function
+
+function RowFeedSourceId(rowItem as object) as string
+    row = rowItem.getParent()
+    if row = invalid or not row.hasField("feedSources")
+        return ""
+    end if
+    feedSources = row.feedSources
+    if not IsArray(feedSources) or feedSources.Count() = 0
+        return ""
+    end if
+    return ValidString(feedSources[0].id)
+end function
+
+' Takes a video out of one of the account's lists. list: "watchLater", "liked" or "history".
+function RemoveFromList(video as object, list as string) as void
+    profile = m.top.profilesService.currentProfile
+    videoId = ValidString(video.videoId)
+    if videoId = ""
+        return
+    end if
+    heading = ""
+    if list = "watchLater"
+        JobSystem.QueueJob(m.jobQueue, Jobs.WatchLaterJob, { videoId: videoId, profile: profile, remove: true }, JobSystem.CreateCallback())
+        heading = Tr(Locale.ContextMenu.RemovedFromWatchLater)
+    else if list = "liked"
+        JobSystem.QueueJob(m.jobQueue, Jobs.LikeJob, { videoId: videoId, action: "removelike", profile: profile }, JobSystem.CreateCallback())
+        heading = Tr(Locale.ContextMenu.RemovedFromLikedVideos)
+    else if list = "history"
+        JobSystem.QueueJob(m.jobQueue, Jobs.FeedbackJob, { token: video.removeFromHistoryToken, profile: profile, kind: "history", videoId: videoId }, JobSystem.CreateCallback())
+        heading = Tr(Locale.ContextMenu.RemovedFromHistory)
+    else
+        return
+    end if
+    row = video.getParent()
+    if row <> invalid
+        row.removeChild(video)
+    end if
+    ShowRowListNotification(heading, video)
 end function
 
 function SaveToWatchLater(video as object) as void

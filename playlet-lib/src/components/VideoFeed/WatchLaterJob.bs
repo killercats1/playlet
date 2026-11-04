@@ -2,7 +2,8 @@ import "pkg:/components/ContentNode/ProfileContentAuthTokenUtils.bs"
 import "pkg:/components/Services/Innertube/Context.bs"
 import "pkg:/source/services/HttpClient.bs"
 
-' Saves a video to the signed-in YouTube account's Watch later playlist. input: { videoId, profile }
+' Saves a video to (or, with remove: true, removes it from) the signed-in YouTube account's Watch later
+' playlist. input: { videoId, profile, remove }
 @job("WatchLaterJob")
 function ExecuteJob() as void
     input = JobGetInput()
@@ -29,7 +30,7 @@ function ExecuteJob() as void
     request = HttpClient.Post("https://www.youtube.com/youtubei/v1/browse/edit_playlist?prettyPrint=false&alt=json").JsonBody({
         "context": Innertube.CreateContext(Innertube.ClientType.Tv, CreateObject("roDeviceInfo"), options)
         "playlistId": "WL"
-        "actions": [{ "action": "ACTION_ADD_VIDEO", "addedVideoId": videoId }]
+        "actions": [WatchLaterAction(videoId, input.remove = true)]
     })
     request.Headers(Innertube.CreateHeaders(Innertube.ClientType.Tv))
     request.Header("Authorization", "Bearer " + auth.token)
@@ -45,4 +46,11 @@ function ExecuteJob() as void
         return
     end if
     JobSuccess()
+end function
+
+function WatchLaterAction(videoId as string, remove as boolean) as object
+    if remove
+        return { "action": "ACTION_REMOVE_VIDEO_BY_VIDEO_ID", "removedVideoId": videoId }
+    end if
+    return { "action": "ACTION_ADD_VIDEO", "addedVideoId": videoId }
 end function

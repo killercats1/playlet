@@ -439,6 +439,25 @@ function OnAddToQueue() as void
     end if
 end function
 
+'  "Play next": right after the playing video (or at the end of the queue when nothing plays).
+function InsertNextInQueue(videoNode as object) as void
+    if videoNode = invalid
+        return
+    end if
+    index = m.top.index
+    if index < 0 or index >= m.content.getChildCount()
+        m.top.addToQueue = [videoNode]
+        return
+    end if
+    node = videoNode.clone(false)
+    m.content.insertChild(node, index + 1)
+    UpdateHasPreviousNext()
+    if m.top.preferences["misc.queue_notifications"]
+        hintVisible = m.top.player = invalid or not m.top.videoContainer.fullscreen
+        VideoQueue.ShowNotifcation(m.top.notifications, node, hintVisible)
+    end if
+end function
+
 function OnAddToQueuePlaylist() as void
     playlistNode = m.top.addToQueuePlaylist
     if playlistNode = invalid

@@ -448,6 +448,13 @@ namespace Locale
         CouldNotSaveToWatchLater = "Couldn't save to Watch later"
         VideoHidden = "Removed from your feeds"
         ChannelHidden = "Channel hidden from your feeds"
+        PlayNext = "Play next"
+        RemoveFromWatchLater = "Remove from Watch later"
+        RemoveFromLikedVideos = "Remove from Liked videos"
+        RemoveFromHistory = "Remove from watch history"
+        RemovedFromWatchLater = "Removed from Watch later"
+        RemovedFromLikedVideos = "Removed from Liked videos"
+        RemovedFromHistory = "Removed from watch history"
     end enum
 
     @locale

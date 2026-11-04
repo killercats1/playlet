@@ -27,7 +27,7 @@
 # into that many rows (index 1, 2, ...); rows without a shelf go away.
 - title: More for you
   id: home_shelves
-  expandRows: 6
+  expandRows: 8
   feedSources:
     - id: inv_auth_home_shelf
       title: More for you

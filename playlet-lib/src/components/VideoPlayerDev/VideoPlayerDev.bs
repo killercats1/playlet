@@ -958,17 +958,24 @@ function SaveToWatchLater() as void
         m.buttonRow.nudge = true
         return
     end if
-    if m.watchLaterSaved or m.watchLaterJob <> invalid
-        m.buttonRow.statusText = Tr(Locale.ContextMenu.SavedToWatchLater)
+    if m.watchLaterJob <> invalid
         return
     end if
-    m.watchLaterSaved = true
-    m.buttonRow.watchLaterSaved = true
-    m.buttonRow.statusText = Tr(Locale.ContextMenu.SavedToWatchLater)
+    ' a second press takes it out again
+    remove = m.watchLaterSaved
+    m.watchLaterSaved = not remove
+    m.buttonRow.watchLaterSaved = m.watchLaterSaved
+    if remove
+        m.buttonRow.statusText = Tr(Locale.ContextMenu.RemovedFromWatchLater)
+    else
+        m.buttonRow.statusText = Tr(Locale.ContextMenu.SavedToWatchLater)
+    end if
     m.watchLaterJob = JobSystem.CreateCallback(OnWatchLaterJobDone)
+    m.watchLaterJob.addFields({ wasSaved: remove })
     JobSystem.QueueJob(m.jobQueue, Jobs.WatchLaterJob, {
         videoId: content.videoId
         profile: profile
+        remove: remove
     }, m.watchLaterJob)
     ArmAutoHide()
 end function
@@ -982,9 +989,9 @@ function OnWatchLaterJobDone(event as object) as void
     m.watchLaterJob = invalid
     info = event.getInfo()
     if not info.success and not info.cancel
-        LogWarn("Save to Watch later failed:", info.error)
-        m.watchLaterSaved = false
-        m.buttonRow.watchLaterSaved = false
+        LogWarn("Watch later failed:", info.error)
+        m.watchLaterSaved = callback.wasSaved
+        m.buttonRow.watchLaterSaved = m.watchLaterSaved
         m.buttonRow.statusText = Tr(Locale.ContextMenu.CouldNotSaveToWatchLater)
     end if
 end function

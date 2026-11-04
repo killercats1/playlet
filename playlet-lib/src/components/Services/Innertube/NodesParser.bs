@@ -2284,15 +2284,23 @@ namespace Innertube
         end if
         notInterested = ""
         dontRecommend = ""
+        removeFromHistory = ""
         for each entry in found
             menuLabel = LCase(entry.label)
             if dontRecommend = "" and menuLabel.InStr("recommend channel") <> -1
                 dontRecommend = entry.token
             else if notInterested = "" and menuLabel.InStr("not interested") <> -1
                 notInterested = entry.token
+            else if removeFromHistory = "" and menuLabel.InStr("history") <> -1
+                ' watch history items: "Remove from watch history"
+                removeFromHistory = entry.token
             end if
         end for
-        if notInterested = "" and dontRecommend = ""
+        if removeFromHistory <> ""
+            item["removeFromHistoryToken"] = removeFromHistory
+        end if
+        ' an unlabeled token is taken as Not interested, but never the history one
+        if notInterested = "" and dontRecommend = "" and removeFromHistory = ""
             notInterested = found[0].token
         end if
         if notInterested <> ""

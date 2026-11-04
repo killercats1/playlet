@@ -41,6 +41,7 @@ namespace InvidiousContent
         SetIfExists(node, "authorId", item, "authorId")
         SetIfExists(node, "notInterestedToken", item, "notInterestedToken")
         SetIfExists(node, "dontRecommendChannelToken", item, "dontRecommendChannelToken")
+        SetIfExists(node, "removeFromHistoryToken", item, "removeFromHistoryToken")
         SetIfExists(node, "lengthSeconds", item, "lengthSeconds")
         node.lengthText = VideoGetLengthText(item)
         node.liveNow = VideoIsLive(item)

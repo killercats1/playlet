@@ -1592,5 +1592,33 @@
         <source>Not interested list cleared.</source>
         <translation>Not interested list cleared.</translation>
     </message>
+    <message>
+        <source>Play next</source>
+        <translation>Play next</translation>
+    </message>
+    <message>
+        <source>Remove from Watch later</source>
+        <translation>Remove from Watch later</translation>
+    </message>
+    <message>
+        <source>Remove from Liked videos</source>
+        <translation>Remove from Liked videos</translation>
+    </message>
+    <message>
+        <source>Remove from watch history</source>
+        <translation>Remove from watch history</translation>
+    </message>
+    <message>
+        <source>Removed from Watch later</source>
+        <translation>Removed from Watch later</translation>
+    </message>
+    <message>
+        <source>Removed from Liked videos</source>
+        <translation>Removed from Liked videos</translation>
+    </message>
+    <message>
+        <source>Removed from watch history</source>
+        <translation>Removed from watch history</translation>
+    </message>
 </context>
 </TS>

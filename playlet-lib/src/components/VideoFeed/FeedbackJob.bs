@@ -11,9 +11,10 @@ function ExecuteJob() as void
     input = JobGetInput()
     token = ValidString(input.token)
     profile = input.profile
-    if ValidString(input.kind) = "channel"
+    kind = ValidString(input.kind)
+    if kind = "channel"
         FeedFilters.Remember("channel", ValidString(input.authorId))
-    else
+    else if kind <> "history"
         FeedFilters.Remember("video", ValidString(input.videoId))
     end if
     if token = ""

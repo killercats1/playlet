@@ -15,6 +15,10 @@ function FuncAddToQueueVideo(videoNode as object)
     m.top.addToQueue = [videoNode]
 end function
 
+function FuncPlayNextVideo(videoNode as object)
+    InsertNextInQueue(videoNode)
+end function
+
 function FuncAddToQueuePlaylist(playlistNode as object)
     m.top.addToQueuePlaylist = playlistNode
 end function
