@@ -1684,5 +1684,9 @@
         <source>Plays next</source>
         <translation>Plays next</translation>
     </message>
+    <message>
+        <source>(built-in)</source>
+        <translation>(built-in)</translation>
+    </message>
 </context>
 </TS>

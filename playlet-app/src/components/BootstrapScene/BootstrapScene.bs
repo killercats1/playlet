@@ -4,7 +4,8 @@ import "pkg:/source/Logger.bs"
 import "pkg:/source/Manifest.bs"
 import "pkg:/source/Registry.bs"
 
-const UPDATE_TIMEOUT_SECONDS = 15
+' download + load of the lib on a slow TV; after this the embedded lib is used
+const UPDATE_TIMEOUT_SECONDS = 45
 
 function Init() as void
     m.scene = m.top.getScene()
@@ -70,8 +71,8 @@ function LoadPlayletLib() as void
     libUrl = m.playletLibUrls[m.playletLibUrlIndex]
     uri = libUrl.link
     if libUrl.type = "update-zip"
-        ' a fresh download every launch, never a cached copy
-        uri += "?launch=" + CreateObject("roDateTime").AsSeconds().ToStr()
+        ' the plain url: the library loader goes by the ".zip" ending (a query string after it made the load
+        ' fail on the TV, falling back to the embedded lib every time)
         m.loadTimeout.control = "start"
     end if
     LoadComponentLibrary(uri)

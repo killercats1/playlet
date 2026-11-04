@@ -1,4 +1,5 @@
 import "pkg:/components/Services/ApplicationInfo/LibManifestUtils.bs"
+import "pkg:/source/utils/Locale.bs"
 
 const LIB_CANARY_ZIP_URL = "https://github.com/iBicha/playlet/releases/download/canary/playlet-lib.zip"
 const LIB_CANARY_SQUASHFS_URL = "https://github.com/iBicha/playlet/releases/download/canary/playlet-lib.squashfs.pkg"
@@ -19,6 +20,10 @@ function GetAppVersion() as string
 
         if libUrlType = "custom" and (libUrl = LIB_CANARY_ZIP_URL or libUrl = LIB_CANARY_SQUASHFS_URL)
             version += "-canary"
+        end if
+        ' auto-update: the download didn't load, this is the copy inside the installed app
+        if libUrlType = "embedded-zip"
+            version += " " + Tr(Locale.NavBar.BuiltIn)
         end if
     end if
 
