@@ -43,5 +43,23 @@ function ExecuteJob() as void
         return
     end if
 
-    JobSuccessData({ details: VideoDetailsParser.FromWatchNext(response.Json()) })
+    payload = response.Json()
+    details = VideoDetailsParser.FromWatchNext(payload)
+
+    ' the top comments: one more request, with the watch page's comments token
+    token = VideoDetailsParser.CommentsToken(payload)
+    if token <> ""
+        commentsRequest = Innertube.CreateNextRequest({ "continuation": token })
+        commentsRequest.Cancellation(cancellation)
+        commentsResponse = commentsRequest.Await()
+        if JobIsCancelled()
+            JobCancel()
+            return
+        end if
+        if commentsResponse.IsSuccess()
+            details.comments = VideoDetailsParser.ParseComments(commentsResponse.Json())
+        end if
+    end if
+
+    JobSuccessData({ details: details })
 end function

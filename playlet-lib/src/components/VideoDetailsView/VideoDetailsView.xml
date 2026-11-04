@@ -71,16 +71,15 @@
             visible="false"
             translation="[520, 410]" />
 
-        <Label
+        <!-- description, then the top comments; press Down from the buttons to scroll it -->
+        <ScrollableText
             id="descriptionLabel"
             translation="[80, 500]"
             width="1120"
             height="190"
-            wrap="true"
-            maxLines="7"
             lineSpacing="2"
             color="0xCCCCCC">
             <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" />
-        </Label>
+        </ScrollableText>
     </children>
 </component>

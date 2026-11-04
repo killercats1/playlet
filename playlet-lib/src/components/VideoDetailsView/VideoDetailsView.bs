@@ -132,7 +132,8 @@ function OnDetailsJobDone(event as object) as void
     if details.likesText <> ""
         m.likesLabel.text = Tr(Locale.VideoDetails.Likes).Replace("%1", details.likesText)
     end if
-    m.descriptionLabel.text = details.description
+    m.descriptionLabel.text = DescriptionWithComments(details)
+    m.descriptionLabel.focusable = true
     if details.authorId <> ""
         SetAuthorId(details.authorId)
     end if
@@ -275,6 +276,17 @@ function OnChannelSelected() as void
 end function
 
 function OnKeyEvent(key as string, press as boolean) as boolean
+    ' the description/comments box: Down from the buttons scrolls into it, Up at its top or Back returns
+    if press and m.descriptionLabel.hasFocus()
+        if key = RemoteKeys.Back or key = RemoteKeys.Up
+            NodeSetFocus(m.playButton, true)
+            return true
+        end if
+    end if
+    if press and key = RemoteKeys.Down and m.descriptionLabel.text <> "" and not m.descriptionLabel.hasFocus()
+        NodeSetFocus(m.descriptionLabel, true)
+        return true
+    end if
     if NavigationKeyHandler(key, press).handled
         return true
     end if
@@ -283,6 +295,26 @@ function OnKeyEvent(key as string, press as boolean) as boolean
         return true
     end if
     return false
+end function
+
+' The description, then the top comments.
+function DescriptionWithComments(details as object) as string
+    parts = []
+    if details.description <> ""
+        parts.Push(details.description)
+    end if
+    if IsArray(details.comments) and details.comments.Count() > 0
+        lines = [Tr(Locale.VideoDetails.Comments)]
+        for each comment in details.comments
+            heading = comment.author
+            if comment.likes <> "" and comment.likes <> "0"
+                heading += "  •  " + Tr(Locale.VideoDetails.Likes).Replace("%1", comment.likes)
+            end if
+            lines.Push(heading + Chr(10) + comment.body)
+        end for
+        parts.Push(lines.Join(Chr(10) + Chr(10)))
+    end if
+    return parts.Join(Chr(10) + Chr(10) + "────────" + Chr(10) + Chr(10))
 end function
 
 function Close() as void

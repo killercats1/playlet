@@ -1700,5 +1700,9 @@
         <source>Updated to v%1</source>
         <translation>Updated to v%1</translation>
     </message>
+    <message>
+        <source>Comments</source>
+        <translation>Comments</translation>
+    </message>
 </context>
 </TS>

@@ -344,9 +344,37 @@ function PushTransportToRenderers() as void
 
     ' SponsorBlock chapter label: the segment title while the cursor sits inside a segment (no-op + "" when off
     ' / no segments).
+    ' or else the video's own chapter (YouTube chapters) at the cursor
+    chapterText = ""
     if m.sponsorblock.HasSegments()
-        m.trickPlayBar.chapterText = m.sponsorblock.ChapterTextForCursor(m.transport.cursorMs)
+        chapterText = m.sponsorblock.ChapterTextForCursor(m.transport.cursorMs)
     end if
+    if chapterText = ""
+        chapterText = YouTubeChapterAt(m.transport.cursorMs)
+    end if
+    if chapterText <> m.trickPlayBar.chapterText
+        m.trickPlayBar.chapterText = chapterText
+    end if
+end function
+
+' The title of the video's chapter at ms, "" when it has no chapters.
+function YouTubeChapterAt(ms as integer) as string
+    content = m.top.content
+    if content = invalid or not content.hasField("metadata") or not IsAssociativeArray(content.metadata)
+        return ""
+    end if
+    videoChapters = content.metadata.chapters
+    if not IsArray(videoChapters)
+        return ""
+    end if
+    title = ""
+    for each chapter in videoChapters
+        if chapter.startMs > ms
+            exit for
+        end if
+        title = ValidString(chapter.title)
+    end for
+    return title
 end function
 
 ' Apply a seek (ms): the one writer of the device's `seek`. The live "jump to edge" sentinel maps to the

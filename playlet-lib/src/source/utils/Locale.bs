@@ -515,6 +515,7 @@ namespace Locale
     @locale
     enum VideoDetails
         Likes = "%1 likes"
+        Comments = "Comments"
     end enum
 
     @locale

@@ -1,3 +1,3 @@
 ' Shown in the "Updated to vX" message the first time Home opens after an update. One or two short sentences,
 ' updated with each release.
-const WHATS_NEW = "Music tab: Recommended music shows your TV Music page when YouTube's music rows don't come through. Home starts a little faster (one request less)."
+const WHATS_NEW = "Welcome to Playlet 3! Chapters: the player's progress bar shows the chapter you're in. Comments: Video details shows the top comments (press Down to scroll). Plus a Music row fallback and a faster Home."

@@ -88,6 +88,7 @@ namespace VideoDetailsParser
             likesText: ""
             subscribersText: ""
             description: ""
+            comments: []
         }
     end function
 
@@ -152,6 +153,68 @@ namespace VideoDetailsParser
             digits = digits.Left(digits.Len() - 3)
         end while
         return digits + result
+    end function
+
+    ' The continuation token of the watch page's comments section, or "".
+    function CommentsToken(payload as object) as string
+        contents = ObjectUtils.Dig(payload, ["contents", "twoColumnWatchNextResults", "results", "results", "contents"])
+        if not IsArray(contents)
+            return ""
+        end if
+        for each item in contents
+            section = ObjectUtils.Dig(item, ["itemSectionRenderer"])
+            if IsAssociativeArray(section) and ValidString(section["sectionIdentifier"]) = "comment-item-section"
+                return ValidString(VideoDetailsParser.FindKey(VideoDetailsParser.FindKey(section, "continuationCommand", 10), "token", 2))
+            end if
+        end for
+        return ""
+    end function
+
+    ' The comments page -> [{ author, body, likes }], at most 20. Newer pages keep the comments in
+    ' commentEntityPayload entities, older ones in commentRenderer.
+    function ParseComments(payload as dynamic) as object
+        found = []
+        VideoDetailsParser.CollectComments(payload, found, 30)
+        return found
+    end function
+
+    function CollectComments(data as dynamic, found as object, depth as integer) as void
+        if depth < 0 or found.Count() >= 20
+            return
+        end if
+        if IsAssociativeArray(data)
+            entity = data["commentEntityPayload"]
+            if IsAssociativeArray(entity)
+                body = ValidString(ObjectUtils.Dig(entity, ["properties", "content", "content"]))
+                if body <> ""
+                    found.Push({
+                        author: ValidString(ObjectUtils.Dig(entity, ["author", "displayName"]))
+                        body: body
+                        likes: ValidString(ObjectUtils.Dig(entity, ["toolbar", "likeCountNotliked"]))
+                    })
+                end if
+                return
+            end if
+            renderer = data["commentRenderer"]
+            if IsAssociativeArray(renderer)
+                body = VideoDetailsParser.Text(renderer["contentText"])
+                if body <> ""
+                    found.Push({
+                        author: VideoDetailsParser.Text(renderer["authorText"])
+                        body: body
+                        likes: VideoDetailsParser.Text(renderer["voteCount"])
+                    })
+                end if
+                return
+            end if
+            for each key in data
+                VideoDetailsParser.CollectComments(data[key], found, depth - 1)
+            end for
+        else if IsArray(data)
+            for each child in data
+                VideoDetailsParser.CollectComments(child, found, depth - 1)
+            end for
+        end if
     end function
 
 end namespace
