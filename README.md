@@ -7,9 +7,10 @@ YouTube's own player as the fallback).
 ## Deploy on Vercel
 
 1. vercel.com → Add New → Project → import `killercats1/playlet`.
-2. **Root Directory**: `website` (Framework: Next.js, detected).
-3. **Environment Variables**: `SESSION_SECRET` = a long random string (it encrypts the sign-in cookie).
-4. Deploy, then in the project's Settings → Git set the **Production Branch** to `website`.
+2. Settings → Git: **Production Branch** = `website` (this branch holds only the site).
+3. Root Directory: leave it empty. Framework: Next.js (`vercel.json` says so).
+4. **Environment Variables**: `SESSION_SECRET` = a long random string (it encrypts the sign-in cookie).
+5. Deploy.
 
 ## Notes
 
